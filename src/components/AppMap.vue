@@ -5,7 +5,23 @@
 </template>
 
 <script>
-import { mapLoader, searchNearBy } from 'common/js/map'
+/**
+ * 只需要对外 emit (附近选址成功, 地址列表)
+ */
+import { mapGetters, mapMutations } from 'vuex'
+import mapConfig from 'common/js/config'
+import {
+  mapLoader,
+  positionPicker,
+  searchNearBy,
+  addDragEvent,
+  creatPointMarker,
+  createPositionText
+} from 'common/js/map'
+
+const RAOUND_RADIUS = 0
+const RESULT_OK = 'OK'
+const KEYWORD = ''
 
 export default {
   props: {
@@ -44,6 +60,27 @@ export default {
     offsetY: {
       type: Number,
       default: 40
+    },
+    markerText: {
+      type: String,
+      default: '在这里上车'
+    }
+  },
+  data() {
+    return {
+      map: null,
+      point: null,
+      positionText: null
+    }
+  },
+  computed: {
+    ...mapGetters([
+      'position'
+    ])
+  },
+  created() {
+    this.drag = {
+      inital: false
     }
   },
   mounted () {
@@ -86,14 +123,142 @@ export default {
           geolocation.getCurrentPosition((status, result) => {
             if (status == 'complete') {
               // this.onComplete(result)
-              this.$emit('get-position-success', result, map)
+              this.onComplete(result, map)
             } else {
-              this.$emit('get-position-err', results)
+              this.onError(result)
             }
           })
         })
       })
-    }
+    },
+    // 解析定位结果
+    onComplete (data, map) {
+      console.log('定位解析成功了')
+      this.map = map
+      let { city, citycode, adcode } = data.addressComponent
+      let { lng, lat } = data.position
+
+      let options = { city, type: mapConfig.type, showCover: false }
+      let lnglat = [lng, lat]
+
+      // 设置起点Marker
+      let startMarkerDom = document.createElement('div')
+      startMarkerDom.className = 'custom-startMarker-wrapper'
+
+      let startMarker = new AMap.Marker({
+        position: new AMap.LngLat(lng, lat),
+        content: startMarkerDom
+        // offset: new AMap.Pixel(-13, -30)
+      })
+
+      map.add(startMarker)
+
+      this.setCity(city)
+      this.fuzzySearch(options, KEYWORD, lnglat, RAOUND_RADIUS)
+      positionPicker(map, this.onPickerSuccess, this.onPickerErr)
+      addDragEvent(map, this.dragStartHandler, this.dragingHandler, this.dragEndHandler)
+    },
+    // 解析定位错误信息
+    onError (data) {
+      console.log('err', data)
+    },
+    // 查询附近的标志性建筑
+    fuzzySearch (...arg) {
+      // TODO: 修改postion store
+      this.setPosition(arg[2])
+
+      searchNearBy(...arg)
+        .then(result => {
+        // 返回最近的建筑
+          console.log('附近的建筑', result)
+          if (result.info === RESULT_OK) {
+            let { pois } = result.poiList
+
+            if (pois.length > 0) {
+              let name = pois[0].name
+              let { lng, lat } = pois[1].location
+
+              if (this.point) {
+                // 移除point点
+                this.map.remove(this.point)
+              }
+
+              // 创建光点
+              this.point = creatPointMarker([lng, lat])
+              this.point.setMap(this.map)
+              this.point.setLabel({
+                // offset: new AMap.Pixel(0 , 0),  //设置文本标注偏移量
+                content: `<div class='custom-info'>${name}</div>`, // 设置文本标注内容
+                direction: this.position[0] > lng ? 'left' : 'right' // 设置文本标注方位
+              })
+
+              // TODO:父组件要做的事情
+              this.$emit('get-pois', pois[0])
+            }
+          }
+        })
+        .catch(error => {
+          throw new Error(error)
+        })
+    },
+    // 设为拖拽模式初始化成功
+    onPickerSuccess (positionResult) {
+      if (positionResult.info === RESULT_OK) {
+        const { city } = positionResult.regeocode.addressComponent
+        const { lng, lat } = positionResult.position
+        const options = { city, type: mapConfig.type, showCover: false }
+
+        // 如果已经创建了text,就无需再次创建了 改变状态及位置
+        if (this.positionText) {
+          this.positionText.setPosition([lng, lat])
+          this.positionText.show()
+
+          // 拿附近的标志性建筑
+          this.fuzzySearch(options, KEYWORD, [lng, lat], RAOUND_RADIUS)
+          return
+        }
+
+        const textConfig = {
+          text: this.markerText,
+          style: {
+            'border': 'none',
+            'top': '-64px',
+            'right': '-102px',
+            'font-size': '14px'
+          },
+          position: [lng, lat]
+        }
+
+        this.positionText = createPositionText(textConfig)
+        this.positionText.setMap(this.map)
+      } else {
+        throw new Error('拖动落地定位失败')
+      }
+    },
+    onPickerErr (positionResult) {
+      throw new Error('拖动定位失败')
+    },
+    dragStartHandler () {
+      if (this.drag.inital) return
+      this.drag.inital = true
+
+      if (this.positionText) {
+        this.positionText.hide()
+      }
+
+      this.$emit('drag-start')
+    },
+    dragingHandler () {
+      this.$emit('draging')
+    },
+    dragEndHandler () {
+      this.drag.inital = false
+      this.$emit('drag-end')
+    },
+    ...mapMutations({
+      setCity: 'SET_CITY',
+      setPosition: 'SET_POSITION'
+    })
   }
 }
 </script>
