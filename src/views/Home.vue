@@ -43,7 +43,7 @@ export default {
     this.setLocation(SING_LOCATION.START, '正在获取上车位置...')
   },
   methods: {
-    getPois(pois) {
+    getPois (pois) {
       this.setLocation(SING_LOCATION.START, pois.name)
     },
     draging () {

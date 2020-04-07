@@ -66,7 +66,7 @@ export default {
       default: '在这里上车'
     }
   },
-  data() {
+  data () {
     return {
       map: null,
       point: null,
@@ -78,7 +78,7 @@ export default {
       'position'
     ])
   },
-  created() {
+  created () {
     this.drag = {
       inital: false
     }
