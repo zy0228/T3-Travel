@@ -131,3 +131,26 @@ export function creatPointMarker (position) {
     content: pointDom
   })
 }
+
+export function searchPlace({ keyword, city, pageSize, pageIndex }) {
+  return new Promise((resolve, reject) => {
+    AMap.service('AMap.PlaceSearch', () => {
+      let autoOptions = {
+        city: city ? city : '南京',
+        children: 1,                 // show children
+        type: mapConfig.type,
+        pageSize,
+        pageIndex
+      }
+
+      let autoComplete = new AMap.PlaceSearch(autoOptions);
+      autoComplete.search(keyword, function(status, result) {
+        if (status === 'complete') {
+          resolve(result)
+        } else {
+          reject(result)
+        }
+      })
+    })
+  })
+}

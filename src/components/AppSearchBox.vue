@@ -2,12 +2,37 @@
   <div class="search-box">
     <div class="startSearch">
       <span class="dot-start"></span>
-      <input @click="onStart" v-model="startLocation" :placeholder="startPlaceholder" type="text">
+      <input ref="startinput"
+        @focus="startFocus = true"
+        @click="onStart"
+        v-model="startLocation"
+        :placeholder="startPlaceholder"
+        type="text"
+      >
+      <i
+        class="icon-clearclose"
+        v-show="edit && startLocation && startFocus"
+        @click.stop="clearStart"
+      >
+      </i>
     </div>
     <slot name="wayPoint"></slot>
     <div class="endSearch">
       <span class="dot-end"></span>
-      <input @click="onEnd" v-model="endLocation" :placeholder="endPlaceholder" type="text">
+      <input
+        ref="endinput"
+        @focus="endFocus = true"
+        @click="onEnd"
+        v-model="endLocation"
+        :placeholder="endPlaceholder"
+        type="text"
+      >
+      <i
+        class="icon-clearclose"
+        v-show="edit && endLocation && endFocus"
+        @click="clearEnd"
+      >
+      </i>
       <div class="operate-wrapper">
         <slot name="operate"></slot>
       </div>
@@ -27,12 +52,18 @@ export default {
     endPlaceholder: {
       type: String,
       default: '您想去哪里？'
+    },
+    edit: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
     return {
       startLocation: '',
-      endLocation: ''
+      endLocation: '',
+      startFocus: false,
+      endFocus: false
     }
   },
   created () {
@@ -51,11 +82,22 @@ export default {
     setEndLoaction (location) {
       this.endLocation = location
     },
-    onStart (e) {
+    onStart(e) {
       this.$emit('on-start')
     },
-    onEnd (e) {
+    onEnd(e) {
       this.$emit('on-end')
+    },
+    clearStart() {
+      this.startLocation = ''
+    },
+    clearEnd() {
+      this.endLocation = ''
+    },
+    blur() {
+      this.$refs.startinput.blur()
+      this.$refs.endinput.blur()
+      this.startFocus = this.endFocus = false
     }
   }
 }
@@ -87,6 +129,17 @@ export default {
     input
       flex 1
       height 25px
+    .icon-clearclose
+      font-size 12px
+      width 14px
+      height 14px
+      color #fff
+      border-radius 50%
+      background #CACACA
+      text-align center
+      line-height 14px
+      margin-left 10px
+      margin-right 52px
   .endSearch
     display flex
     align-items center
@@ -102,6 +155,18 @@ export default {
     input
       flex 1
       height 25px
+    .icon-clearclose
+      font-size 12px
+      width 14px
+      height 14px
+      margin-right -18px
+      color #fff
+      border-radius 50%
+      background #CACACA
+      text-align center
+      line-height 14px
+      margin-left 10px
+      z-index 9999
     .operate-wrapper
       width 60px
       height 50px

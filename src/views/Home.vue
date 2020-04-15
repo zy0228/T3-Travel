@@ -4,6 +4,7 @@
       <the-header></the-header>
     </div>
     <app-map
+      :offsetY="offsetY"
       :showCircle="showCircle"
       :geolocation="geolocation"
       @draging="draging"
@@ -11,7 +12,7 @@
     >
     </app-map>
     <div class="search-wrapper">
-      <search-box ref="searchBox" @on-start="onStart" @on-end="onEnd">
+      <search-box ref="searchBox" @on-start="entery('start')" @on-end="entery('end')">
         <template #operate>
           <div class="reservation">
             <span class="icon-clock2"></span>
@@ -36,31 +37,45 @@ export default {
   data () {
     return {
       showCircle: false,
-      geolocation: true
+      geolocation: true,
+      offsetY: 220,
+      location: '',
+      locationend: false
     }
   },
-  mounted () {
+  mounted() {
     this.setLocation(SING_LOCATION.START, '正在获取上车位置...')
   },
   methods: {
-    getPois (pois) {
+    getPois(pois) {
+      console.log(pois)
       this.setLocation(SING_LOCATION.START, pois.name)
+      this.location = pois.name
+      this.locationend = true
     },
-    draging () {
+    draging() {
       this.setLocation(SING_LOCATION.START, '正在获取上车位置...')
+      this.locationend = false
     },
-    setLocation (sign, location) {
+    setLocation(sign, location) {
       if (sign === SING_LOCATION.START) {
         this.$refs.searchBox.setStartLocation(location)
       } else if (sign = SING_LOCATION.END) {
+        if (!locationend) return
         this.$refs.searchBox.setEndLocation(location)
       }
     },
-    onStart (e) {
-      // TODO: 跳转页面
-    },
-    onEnd (e) {
-      // TODO: 跳转页面
+    entery(start) {
+      this.$refs.searchBox.blur()
+      if (!this.locationend) return
+
+      this.$router.push({
+        path: '/search',
+        query: {
+          start,
+          location: this.location
+        }
+      })
     }
   },
   components: {

@@ -1,2 +1,5 @@
 export const SET_CITY = 'SET_CITY'
-export const SET_POSITION = 'SET_POSITION'
+export const SET_CENTER_POSITION = 'SET_CENTER_POSITION'
+export const SET_START_POIS = 'SET_START_POIS'
+export const SET_END_POIS = 'SET_END_POIS'
+export const SET_HISTORY = 'SET_HISTORY'

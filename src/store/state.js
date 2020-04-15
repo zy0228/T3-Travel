@@ -1,6 +1,11 @@
+import { loadCenterPoistion } from 'common/js/cache'
+
 const state = {
   city: '',
-  position: [] // 记录当前选中的经纬度
+  centerPosition: loadCenterPoistion(), // center
+  startPois: {},
+  endPois: {},
+  history: {}
 }
 
 export default state

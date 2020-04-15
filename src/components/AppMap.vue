@@ -8,7 +8,7 @@
 /**
  * 只需要对外 emit (附近选址成功, 地址列表)
  */
-import { mapGetters, mapMutations } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 import mapConfig from 'common/js/config'
 import {
   mapLoader,
@@ -75,7 +75,7 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'position'
+      'centerPosition'
     ])
   },
   created () {
@@ -164,8 +164,7 @@ export default {
     },
     // 查询附近的标志性建筑
     fuzzySearch (...arg) {
-      // TODO: 修改postion store
-      this.setPosition(arg[2])
+      this.setCenterPosition(arg[2])
 
       searchNearBy(...arg)
         .then(result => {
@@ -175,7 +174,7 @@ export default {
             let { pois } = result.poiList
 
             if (pois.length > 0) {
-              let name = pois[0].name
+              let name = pois[1].name
               let { lng, lat } = pois[1].location
 
               if (this.point) {
@@ -189,10 +188,9 @@ export default {
               this.point.setLabel({
                 // offset: new AMap.Pixel(0 , 0),  //设置文本标注偏移量
                 content: `<div class='custom-info'>${name}</div>`, // 设置文本标注内容
-                direction: this.position[0] > lng ? 'left' : 'right' // 设置文本标注方位
+                direction: this.centerPosition[0] > lng ? 'left' : 'right' // 设置文本标注方位
               })
 
-              // TODO:父组件要做的事情
               this.$emit('get-pois', pois[0])
             }
           }
@@ -256,9 +254,11 @@ export default {
       this.$emit('drag-end')
     },
     ...mapMutations({
-      setCity: 'SET_CITY',
-      setPosition: 'SET_POSITION'
-    })
+      setCity: 'SET_CITY'
+    }),
+    ...mapActions([
+      'setCenterPosition'
+    ])
   }
 }
 </script>
