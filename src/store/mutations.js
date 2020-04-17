@@ -15,6 +15,12 @@ const mutations = {
   },
   [types.SET_HISTORY] (state, val) {
     state.history = val
+  },
+  [types.SET_HOME] (state, home) {
+    state.home = home
+  },
+  [types.SET_COMPANY] (state, company) {
+    state.company = company
   }
 }
 

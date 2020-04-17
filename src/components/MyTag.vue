@@ -5,25 +5,25 @@
     :scrollY="scrollY"
   >
     <ul class="tag-wrapper">
-      <li class="tag-item">
+      <li class="tag-item" @click="selectTagHome">
         <div class="name">
           <span class="icon icon-home_filled"></span>
           <span>家</span>
         </div>
         <div class="des">
-          加加加
+          {{(home.id && home.name) || '设置家的地址'}}
         </div>
       </li>
-      <li class="tag-item">
+      <li class="tag-item" @click="selectTagCompany">
         <div class="name">
           <span class="icon icon-business_center"></span>
           <span>公司</span>
         </div>
         <div class="des">
-          公司地址
+          {{(company.id && company.name) || '设置公司地址'}}
         </div>
       </li>
-      <li class="tag-item">
+      <li class="tag-item" @click="selectTagFavorite">
         <div class="name">
           <span class="icon icon-stargrade"></span>
           <span>收藏选点</span>
@@ -37,6 +37,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import Scroll from 'components/BaseScroll'
 
 export default {
@@ -44,6 +45,23 @@ export default {
     return {
       scrollX: true,
       scrollY: false
+    }
+  },
+  computed: {
+    ...mapGetters([
+      'home',
+      'company'
+    ])
+  },
+  methods: {
+    selectTagHome() {
+      this.$emit('selectTag', 'home', this.home)
+    },
+    selectTagCompany() {
+      this.$emit('selectTag', 'company', this.company)
+    },
+    selectTagFavorite() {
+      this.$emit('selectTag', 'favorite')
     }
   },
   components: {
@@ -54,6 +72,7 @@ export default {
 
 <style lang="stylus" scoped>
 @import '~common/stylus/variable'
+@import '~common/stylus/mixin'
 
 .myTage
   position relative
@@ -87,4 +106,5 @@ export default {
         color #c3c3c3
         font-size 14px
         margin-left 23px
+        no-warp()
 </style>

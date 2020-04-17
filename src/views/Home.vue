@@ -48,7 +48,6 @@ export default {
   },
   methods: {
     getPois(pois) {
-      console.log(pois)
       this.setLocation(SING_LOCATION.START, pois.name)
       this.location = pois.name
       this.locationend = true

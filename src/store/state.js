@@ -1,11 +1,13 @@
-import { loadCenterPoistion } from 'common/js/cache'
+import { loadCenterPoistion, loadHistory, loadCompany, loadHome} from 'common/js/cache'
 
 const state = {
   city: '',
   centerPosition: loadCenterPoistion(), // center
   startPois: {},
   endPois: {},
-  history: {}
+  home: loadHome(),
+  company: loadCompany(),
+  history: loadHistory()
 }
 
 export default state

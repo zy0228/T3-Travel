@@ -21,7 +21,10 @@
           :edit="edit"
           @query-start="startQuery"
           @query-end="endQuery"
+          @onfocusStart="onfocusStart"
+          @onfocusEnd="onfocusEnd"
           :startPlaceholder="startPlaceholder"
+          @star="star"
         >
           <template #operate>
             <div class="add-way" v-show="isShowAdd">
@@ -38,10 +41,23 @@
           </template>
         </search-box>
         <div class="search-content" v-show="!query">
-          <my-tag></my-tag>
+          <my-tag @selectTag="selectTag"></my-tag>
           <div class="history">
-            <span class="icon-location"></span>
-            <span>在地图上选址</span>
+            <div class="mapSelection">
+              <span class="icon-location"></span>
+              <span class="text">在地图上选址</span>
+            </div>
+            <div class="history-wrapper">
+              <search-list
+                ref="searchList"
+                :searchHistory="searchHistory"
+                @star="star"
+              >
+              </search-list>
+            </div>
+            <div class="clearHistory" v-show="searchHistory.length > 0">
+              <span @click="clearHistory">清除历史记录</span>
+            </div>
           </div>
         </div>
       </div>
@@ -50,20 +66,33 @@
       <div ref="searchResult" class="search-result" v-show="query">
         <suggest ref="suggest"
           :query="query"
+          @selectItem="selection"
           @list-scroll="listScroll"
         ></suggest>
       </div>
+    </transition>
+    <confirm
+      ref="confirm"
+      text="确认删除所有的历史记录吗？"
+      @confirm="removeSearch"
+    >
+    </Confirm>
+    <transition name="fade">
+      <router-view></router-view>
     </transition>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 import SearchBox from 'components/AppSearchBox'
 import DragList from 'components/BaseDragList'
 import Suggest from 'components/AppSuggest'
+import SearchList from 'components/MySearchList'
 import MyTag from 'components/MyTag'
 import Way from 'common/js/way'
+import Pois from 'common/js/poi'
+import Confirm from 'components/BaseConfirm'
 
 export default {
   data() {
@@ -74,14 +103,15 @@ export default {
       id: 0,
       delayShow: false,
       query: '',
-      query1: '',
-      query2: '',
-      first: true
+      first: true,
+      queryIsEnd: false,
+      focusIsEnd: false
     }
   },
   computed: {
     ...mapGetters([
-      'city'
+      'city',
+      'searchHistory'
     ]),
     isShowAdd() {
       return this.poinWay.length < 3
@@ -100,11 +130,17 @@ export default {
     receive() {
       let {start, location} = this.$route.query
 
-      if (start === 'start') return
+      if (start === 'start') {
+        this.$nextTick(() => {
+          this.$refs.searchBox.focusStart()
+          return
+        })
+      }
 
       if (start === 'end') {
         this.$nextTick(() => {
           this.$refs.searchBox.setStartLocation(location)
+          this.$refs.searchBox.focusEnd()
           this.first = true
         })
       }
@@ -135,25 +171,74 @@ export default {
       })
     },
     startQuery(query) {
-      this.query1 = query
       if (this.first) {
         this.first = false
         return
       }
       this.query = query
+      this.queryIsEnd = false
     },
     endQuery(query) {
-      this.query2 = query
       this.query = query
+      this.queryIsEnd = true
+    },
+    onfocusStart() {
+      // TODO: 1聚焦了
+      this.focusIsEnd = false
+    },
+    onfocusEnd() {
+      // TODO: 2聚焦了
+      this.focusIsEnd = true
     },
     listScroll() {
       this.$refs.searchBox.blur()
+    },
+    selection(item) {
+      // TODO:save serach
+      let poi = new Pois(item)
+
+      this.saveSearch(poi)
+
+      if (this.queryIsEnd) {
+        this.$refs.searchBox.setEndLoaction(item.name)
+      } else {
+        this.$refs.searchBox.setStartLocation(item.name)
+      }
+    },
+    star(item) {
+      this.saveFavoritesTag(item.id)
+    },
+    clearHistory() {
+      this.$refs.confirm.show()
+    },
+    selectTag(flag, item) {
+      if (flag === 'home') {
+        if (item.id) {
+          this.setLocation(item)
+        } else {
+          this.$router.push({
+            path: '/search/home/select'
+          })
+        }
+      } else if (flag === 'company') {
+        if (item.id) {
+          this.setLocation(item)
+        } else {
+          this.$router.push({
+            path: '/search/company/select'
+          })
+        }
+      } else {
+        this.$router.push({
+          path: '/search/start/favorite'
+        })
+      }
     },
     sort(items) {
       let i = items.length
 
       while(i--) {
-        let id = items[i].data.dataset.id
+        let id = +items[i].data.dataset.id
         let order = items[i].order
 
         if (id || id === 0) {
@@ -161,6 +246,7 @@ export default {
 
           if (index !== -1) {
             this.poinWay[index].order = order
+            this.poinWay[index].placeholder = `请输入途径点${order + 1}`
           }
         }
       }
@@ -173,15 +259,44 @@ export default {
         return +item.id === +id
       })
     },
+    setLocation(item) {
+      if (this.focusIsEnd) {
+        this.$refs.searchBox.setEndLoaction(item.name)
+      } else {
+        this.$refs.searchBox.setStartLocation(item.name)
+      }
+    },
+    setStartLocation() {
+      // TODO: 添加startlocation name到输入框并且存储到store
+    },
+    setEndLocation() {
+      // TODO: 添加
+    },
     ...mapMutations({
       setCity: 'SET_CITY'
-    })
+    }),
+    ...mapActions([
+      'saveSearch',
+      'removeSearch',
+      'saveFavoritesTag'
+    ])
   },
   components: {
     SearchBox,
     DragList,
     MyTag,
-    Suggest
+    Suggest,
+    SearchList,
+    Confirm
+  },
+  watch: {
+    query(newVal) {
+      if (!newVal) {
+        this.$nextTick(() => {
+          this.$refs.searchList.refresh()
+        })
+      }
+    }
   }
 }
 </script>
@@ -229,7 +344,7 @@ export default {
       & .light
         color #666
   .upper-enter-active, .upper-leave-active
-    transition all .1s
+    transition all .3s
   .upper-enter, .upper-leave-to
     transform translate3d(0, 100%, 0)
   .search-wrapper
@@ -256,10 +371,47 @@ export default {
         &:hover
           color #111
     .search-content
+      width 100%
+      overflow hidden
       position fixed
       top 167px
       bottom 0
       background-color rgb(246,246,246)
+      .history
+        position fixed
+        bottom 0
+        top 242px
+        left 10px
+        right 10px
+        border-top-left-radius 5px
+        border-top-right-radius 5px
+        background-color $color-background
+        .mapSelection
+          padding 20px 12px
+          z-index 99999
+          .icon-location
+            color $color-text-o
+            margin-right 10px
+          .text
+            font-weight 400
+        .history-wrapper
+          position fixed
+          overflow: hidden
+          right: 10px
+          left: 10px
+          bottom: 40px
+          top: 300px
+        .clearHistory
+          position fixed
+          left 10px
+          right 10px
+          text-align center
+          height 40px
+          line-height 40px
+          bottom 0
+          font-size 12px
+          color #ACACAC
+          font-weight 400
   .slide-enter-active, .slide-leave-active
     transition all 0.2s
   .slide-enter, .slide-leave-to
@@ -274,4 +426,13 @@ export default {
     z-index 111111
     border-top-left-radius 4px
     border-top-right-radius 4px
+.fade-enter-active, .fade-leave-active
+  transition all .2s
+.fade-enter, .fade-leave-to
+  transform translate3d(100%, 0, 0)
+
+/deep/ .bscroll-vertical-scrollbar
+  width 5px!important
+  /deep/.bscroll-indicator
+    background #A9A9A9!important
 </style>

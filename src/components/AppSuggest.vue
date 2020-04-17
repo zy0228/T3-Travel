@@ -9,7 +9,7 @@
     ref="suggest"
   >
     <ul class="suggest-list">
-      <li v-for="(item, index) in result" :key="index" class="suggest-item">
+      <li v-for="(item, index) in result" :key="index" class="suggest-item" @click="selectItem(item)">
         <div class="suggest-item-main">
           <div class="icon">
             <span class="icon-location_city"></span>
@@ -23,7 +23,7 @@
           </div>
         </div>
         <div class="suggest-item-child" v-show="item.children">
-          <div v-for="child in item.children" :key="child.id" class="child-item">
+          <div v-for="child in item.children" :key="child.id" class="child-item" @click.stop="selectItem(child)">
             {{child.sname}}
           </div>
         </div>
@@ -96,7 +96,7 @@ export default {
         }
       })
       .catch(err => {
-        this.hasMore = false
+        console.log(err)
       })
     },
     searchMore() {
@@ -122,6 +122,8 @@ export default {
           this.result = this.result.concat(pois.map((item) => new Poi(item)))
           this._checkHasMore(res.poiList)
         }
+      }).catch(e => {
+        throw new Error(e)
       })
     },
     _checkHasMore(data) {
@@ -130,6 +132,9 @@ export default {
       if (pageIndex * pageSize >= count) {
         this.hasMore = false
       }
+    },
+    selectItem(item) {
+      this.$emit('selectItem', item)
     },
     getDistance(location) {
       if(!this.centerPosition) return '11km'
@@ -195,7 +200,7 @@ export default {
           overflow hidden
           .text
             color #070707
-            font-size 14
+            font-size 14px
             font-weight 400
           .des
             color #ACACAC

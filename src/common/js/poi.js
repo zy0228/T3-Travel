@@ -4,7 +4,7 @@ export default class Poi {
     this.name = name
     this.location = location
     this.address = address
-    this.children = chidlren ? childrenSlice(children) : null
+    this.children = children ? childrenSlice(children) : null
   }
 }
 

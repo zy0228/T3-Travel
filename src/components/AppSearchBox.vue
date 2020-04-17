@@ -2,8 +2,9 @@
   <div class="search-box">
     <div class="startSearch">
       <span class="dot-start"></span>
-      <input ref="startinput"
-        @focus="startFocus = true"
+      <input
+        ref="startinput"
+        @focus="onfocusStart"
         @click="onStart"
         v-model="startLocation"
         :placeholder="startPlaceholder"
@@ -21,7 +22,7 @@
       <span class="dot-end"></span>
       <input
         ref="endinput"
-        @focus="endFocus = true"
+        @focus="onfocusEnd"
         @click="onEnd"
         v-model="endLocation"
         :placeholder="endPlaceholder"
@@ -98,6 +99,20 @@ export default {
       this.$refs.startinput.blur()
       this.$refs.endinput.blur()
       this.startFocus = this.endFocus = false
+    },
+    focusEnd() {
+      this.$refs.endinput.focus()
+    },
+    focusStart() {
+      this.$refs.startinput.focus()
+    },
+    onfocusEnd() {
+      this.endFocus = true
+      this.$emit('onfocusEnd')
+    },
+    onfocusStart() {
+      this.startFocus = true
+      this.$emit('onfocusStart')
     }
   }
 }

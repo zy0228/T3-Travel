@@ -20,7 +20,7 @@ class TouchData {
 
     // target item
     this.targetItemNode = getParentItem(e.target) ?
-      collection.getItemById(+(getParentItem(e.target).dataset.id)) : null
+      collection.getItemById(getParentItem(e.target).dataset.id) : null
 
     this.moved = false
   }

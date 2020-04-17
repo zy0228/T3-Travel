@@ -133,7 +133,6 @@ export default {
     },
     // 解析定位结果
     onComplete (data, map) {
-      console.log('定位解析成功了')
       this.map = map
       let { city, citycode, adcode } = data.addressComponent
       let { lng, lat } = data.position

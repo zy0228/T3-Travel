@@ -7,11 +7,11 @@ export default class Collection {
   }
 
   getItemById(id) {
-    return this.hash.get(id)
+    return this.hash.get('' + id)
   }
 
   hasItem(id) {
-    return this.hash.has(+id)
+    return this.hash.has(id)
   }
 
   addItem(data) {
@@ -21,7 +21,7 @@ export default class Collection {
 
     this.items.push(newItem)
 
-    this.hash.set(+(newItem.data.dataset.id), newItem)
+    this.hash.set(newItem.data.dataset.id, newItem)
 
     return newItem
   }
@@ -64,7 +64,7 @@ export default class Collection {
     if (delIndex || delIndex === 0) {
       // delete item data
       items.splice(delIndex, 1)
-      this.hash.delete(+item.data.dataset.id)
+      this.hash.delete(item.data.dataset.id)
     }
   }
 }
