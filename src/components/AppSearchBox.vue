@@ -6,7 +6,7 @@
         ref="startinput"
         @focus="onfocusStart"
         @click="onStart"
-        v-model="startLocation"
+        v-model.trim="startLocation"
         :placeholder="startPlaceholder"
         type="text"
       >
@@ -24,7 +24,7 @@
         ref="endinput"
         @focus="onfocusEnd"
         @click="onEnd"
-        v-model="endLocation"
+        v-model.trim="endLocation"
         :placeholder="endPlaceholder"
         type="text"
       >

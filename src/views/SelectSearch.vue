@@ -40,18 +40,19 @@
             </drag-list>
           </template>
         </search-box>
-        <div class="search-content" v-show="!query">
+        <div class="search-content" :style="{top: contentTop}" v-show="!query">
           <my-tag @selectTag="selectTag"></my-tag>
-          <div class="history">
+          <div class="history" :style="{top: histroyTop}">
             <div class="mapSelection">
               <span class="icon-location"></span>
               <span class="text">在地图上选址</span>
             </div>
-            <div class="history-wrapper">
+            <div class="history-wrapper" :style="{top: historyWrapperTop}">
               <search-list
                 ref="searchList"
                 :searchHistory="searchHistory"
                 @star="star"
+                @selectHistory="slectSearch"
               >
               </search-list>
             </div>
@@ -63,7 +64,7 @@
       </div>
     </transition>
     <transition name="slide">
-      <div ref="searchResult" class="search-result" v-show="query">
+      <div ref="searchResult" class="search-result" v-show="query" :style="{top: searchResultTop}">
         <suggest ref="suggest"
           :query="query"
           @selectItem="selection"
@@ -94,6 +95,12 @@ import Way from 'common/js/way'
 import Pois from 'common/js/poi'
 import Confirm from 'components/BaseConfirm'
 
+const CONTENT_TOP = 167
+const HISTORY_TOP = 242
+const HISTORY_WRAPPER = 300
+const SEARCH_RESULT = 178
+const ITEM_HEIGHT = 40
+
 export default {
   data() {
     return {
@@ -105,16 +112,36 @@ export default {
       query: '',
       first: true,
       queryIsEnd: false,
-      focusIsEnd: false
+      focusIsEnd: false,
+      query1: '',
+      query2: ''
     }
   },
   computed: {
     ...mapGetters([
       'city',
-      'searchHistory'
+      'searchHistory',
+      'startPois',
+      'endPois'
     ]),
     isShowAdd() {
       return this.poinWay.length < 3
+    },
+    contentTop() {
+      let top = (this.poinWay.length * ITEM_HEIGHT) +  CONTENT_TOP
+      return `${top}px`
+    },
+    histroyTop() {
+      let top = (this.poinWay.length * ITEM_HEIGHT) +  HISTORY_TOP
+      return `${top}px`
+    },
+    historyWrapperTop() {
+      let top = (this.poinWay.length * ITEM_HEIGHT) +  HISTORY_WRAPPER
+      return `${top}px`
+    },
+    searchResultTop() {
+      let top = (this.poinWay.length * ITEM_HEIGHT) +  SEARCH_RESULT
+      return `${top}px`
     }
   },
   created() {
@@ -123,26 +150,48 @@ export default {
       this.receive()
     }, (150))
   },
+  beforeRouteUpdate(to, from, next) {
+    let { path, params } = from
+
+    if (/favorite$/.test(path)) {
+      if (params.flag === 'start') {
+        let name = this.startPois.name
+        this.$refs.searchBox.setStartLocation(name)
+      } else if (params.flag === 'end'){
+        let name = this.endPois.name
+        this.$refs.searchBox.setEndLoaction(name)
+      } else {
+        throw new Error('check your router, params is exception ')
+      }
+    }
+
+    next()
+  },
   methods: {
     back() {
       this.$router.back()
     },
     receive() {
-      let {start, location} = this.$route.query
+      let {start} = this.$route.query
 
       if (start === 'start') {
         this.$nextTick(() => {
           this.$refs.searchBox.focusStart()
+          this.first = false
           return
         })
       }
 
       if (start === 'end') {
         this.$nextTick(() => {
-          this.$refs.searchBox.setStartLocation(location)
+          this.$refs.searchBox.setStartLocation(this.startPois.name)
           this.$refs.searchBox.focusEnd()
           this.first = true
         })
+      }
+
+      if (start === 'all') {
+        // todo: 结算
       }
     },
     addWay() {
@@ -171,16 +220,39 @@ export default {
       })
     },
     startQuery(query) {
+      let queryFormat = query.trim()
+
       if (this.first) {
         this.first = false
+        this.query1 = queryFormat
         return
       }
-      this.query = query
+
+      let name = this.startPois.name || ''
+      if (queryFormat === name) {
+        this.query = ''
+        this.query1 = queryFormat
+        return
+      }
+
+      this.query = queryFormat
+      this.query1 = queryFormat
       this.queryIsEnd = false
+      this.saveStart(new Object())
     },
     endQuery(query) {
-      this.query = query
+      let queryFormat = query.trim()
+      let name = this.endPois.name || ''
+      if (queryFormat === name) {
+        this.query = ''
+        this.query2 = queryFormat
+        return
+      }
+
+      this.query = queryFormat
+      this.query2 = queryFormat
       this.queryIsEnd = true
+      this.saveEnd(new Object())
     },
     onfocusStart() {
       // TODO: 1聚焦了
@@ -199,11 +271,9 @@ export default {
 
       this.saveSearch(poi)
 
-      if (this.queryIsEnd) {
-        this.$refs.searchBox.setEndLoaction(item.name)
-      } else {
-        this.$refs.searchBox.setStartLocation(item.name)
-      }
+      this.setLocation(item)
+
+      this.query = ''
     },
     star(item) {
       this.saveFavoritesTag(item.id)
@@ -229,10 +299,14 @@ export default {
           })
         }
       } else {
+        console.log('giao')
         this.$router.push({
-          path: '/search/start/favorite'
+          path: `/search/${this.focusIsEnd ? 'end' : 'start'}/favorite`
         })
       }
+    },
+    slectSearch(item) {
+      this.setLocation(item)
     },
     sort(items) {
       let i = items.length
@@ -261,16 +335,16 @@ export default {
     },
     setLocation(item) {
       if (this.focusIsEnd) {
-        this.$refs.searchBox.setEndLoaction(item.name)
+        this.saveEnd(new Pois(item))
+        this.$nextTick(() => {
+          this.$refs.searchBox.setEndLoaction(item.name)
+        })
       } else {
-        this.$refs.searchBox.setStartLocation(item.name)
+        this.saveStart(new Pois(item))
+        this.$nextTick(() => {
+          this.$refs.searchBox.setStartLocation(item.name)
+        })
       }
-    },
-    setStartLocation() {
-      // TODO: 添加startlocation name到输入框并且存储到store
-    },
-    setEndLocation() {
-      // TODO: 添加
     },
     ...mapMutations({
       setCity: 'SET_CITY'
@@ -278,7 +352,9 @@ export default {
     ...mapActions([
       'saveSearch',
       'removeSearch',
-      'saveFavoritesTag'
+      'saveFavoritesTag',
+      'saveStart',
+      'saveEnd'
     ])
   },
   components: {
@@ -296,6 +372,39 @@ export default {
           this.$refs.searchList.refresh()
         })
       }
+    },
+    query1(newV) {
+      let startName = this.startPois.name
+      let endName = this.endPois.name
+
+      if (!this.startPois.name || !this.endPois.name) return
+
+      if (
+        newV === startName  &&
+        this.query2 === endName
+      ) {
+        console.log('哦了铁子')
+      }
+    },
+    query2(newV) {
+      let startName = this.startPois.name
+      let endName = this.endPois.name
+
+      if (!this.startPois.name || !this.endPois.name) return
+
+      console.log(this.query1 === startName)
+      if (newV === endName &&
+      this.query1 === startName
+      ) {
+        console.log('欧了铁子')
+      }
+    },
+    poinWay() {
+      setTimeout(() => {
+        this.$nextTick(() => {
+          this.$refs.searchList.refresh()
+        })
+      }, 10)
     }
   }
 }

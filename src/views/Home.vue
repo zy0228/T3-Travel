@@ -26,11 +26,13 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
 import AppMap from 'components/AppMap'
 import TheHeader from 'components/TheHeader'
 import TabBar from 'components/TheTabBar'
 import SearchBox from 'components/AppSearchBox'
 import { SING_LOCATION } from 'common/js/config'
+import Pois from 'common/js/poi'
 
 export default {
   name: 'home',
@@ -49,6 +51,7 @@ export default {
   methods: {
     getPois(pois) {
       this.setLocation(SING_LOCATION.START, pois.name)
+      this.saveStart(new Pois(pois))
       this.location = pois.name
       this.locationend = true
     },
@@ -68,14 +71,18 @@ export default {
       this.$refs.searchBox.blur()
       if (!this.locationend) return
 
+      if (start === 'start') {
+        this.saveStart(new Object)
+      }
+
       this.$router.push({
         path: '/search',
-        query: {
-          start,
-          location: this.location
-        }
+        query: { start }
       })
-    }
+    },
+    ...mapActions([
+      'saveStart'
+    ])
   },
   components: {
     AppMap,

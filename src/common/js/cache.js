@@ -58,12 +58,12 @@ export function saveEndPois(pois) {
 }
 
 export function loadSP() {
-  let poi = localStorage.getItem(START_POIS_KEY)
+  let poi = localStorage.getItem(START_POIS_KEY) || '{}'
   return JSON.parse(poi)
 }
 
 export function loadEP() {
-  let poi = localStorage.getItem(END_POIS_KEY)
+  let poi = localStorage.getItem(END_POIS_KEY) || '{}'
   return JSON.parse(poi)
 }
 

@@ -14,7 +14,7 @@
     <scroll :data="favorite" class="list-wrapper" v-show="favorite.length > 0">
       <ul>
         <li
-          class="list-item" v-for="item in favorite" :key="item.id">
+          class="list-item" v-for="item in favorite" :key="item.id" @click="select(item)">
           <div
             :data-id="item.id"
             class="item"
@@ -52,6 +52,7 @@ import Scroll from 'components/BaseScroll'
 import Collection from 'common/js/collection'
 import TouchData from 'common/js/touchData'
 import Item from 'common/js/item'
+import Pois from 'common/js/poi'
 
 export default {
   data() {
@@ -72,12 +73,27 @@ export default {
   },
   mounted() {
     let itemList = this.$refs.item
+    if (!itemList) return
     itemList.forEach((item, index) => {
       this.collection.addItem(item)
     })
   },
   methods: {
     back() {
+      this.$router.back()
+    },
+    select(item) {
+      let pois = new Pois(item)
+      let flag = this.$route.params.flag
+
+      if (flag === 'start') {
+        this.saveStart(pois)
+      }
+
+      if (flag === 'end') {
+        this.saveEnd(pois)
+      }
+
       this.$router.back()
     },
     touchStart(e) {
@@ -111,7 +127,9 @@ export default {
       this.touches = []
     },
     ...mapActions([
-      'saveFavoritesTag'
+      'saveFavoritesTag',
+      'saveStart',
+      'saveEnd'
     ])
   },
   components: {
