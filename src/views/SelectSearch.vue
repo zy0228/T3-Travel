@@ -43,7 +43,7 @@
         <div class="search-content" :style="{top: contentTop}" v-show="!query">
           <my-tag @selectTag="selectTag"></my-tag>
           <div class="history" :style="{top: histroyTop}">
-            <div class="mapSelection">
+            <div class="mapSelection" @click="mapSelect">
               <span class="icon-location"></span>
               <span class="text">在地图上选址</span>
             </div>
@@ -94,6 +94,7 @@ import MyTag from 'components/MyTag'
 import Way from 'common/js/way'
 import Pois from 'common/js/poi'
 import Confirm from 'components/BaseConfirm'
+import MapSelect from 'components/AppMapSelect'
 
 const CONTENT_TOP = 167
 const HISTORY_TOP = 242
@@ -153,13 +154,17 @@ export default {
   beforeRouteUpdate(to, from, next) {
     let { path, params } = from
 
-    if (/favorite$/.test(path)) {
+    if (/favorite|mapselect$/.test(path)) {
       if (params.flag === 'start') {
         let name = this.startPois.name
-        this.$refs.searchBox.setStartLocation(name)
+        if (name) {
+          this.$refs.searchBox.setStartLocation(name)
+        }
       } else if (params.flag === 'end'){
         let name = this.endPois.name
-        this.$refs.searchBox.setEndLoaction(name)
+        if (name) {
+          this.$refs.searchBox.setEndLoaction(name)
+        }
       } else {
         throw new Error('check your router, params is exception ')
       }
@@ -299,7 +304,6 @@ export default {
           })
         }
       } else {
-        console.log('giao')
         this.$router.push({
           path: `/search/${this.focusIsEnd ? 'end' : 'start'}/favorite`
         })
@@ -307,6 +311,11 @@ export default {
     },
     slectSearch(item) {
       this.setLocation(item)
+    },
+    mapSelect() {
+      this.$router.push({
+          path: `/search/${this.focusIsEnd ? 'end' : 'start'}/mapselect`
+        })
     },
     sort(items) {
       let i = items.length
@@ -363,7 +372,8 @@ export default {
     MyTag,
     Suggest,
     SearchList,
-    Confirm
+    Confirm,
+    MapSelect
   },
   watch: {
     query(newVal) {

@@ -3,7 +3,8 @@ import Router from 'vue-router'
 const Home = () => import('./views/Home.vue')
 const Search = () => import('./views/SelectSearch')
 const Favorite = () => import('./components/AppFavorites')
-const Appsearch = () => import('./components/AppSearch.vue')
+const Appsearch = () => import('./components/AppSearch')
+const AppMapSelect = () => import('./components/AppMapSelect')
 
 Vue.use(Router)
 
@@ -24,6 +25,10 @@ export default new Router({
         {
           path: ':flag?/select',
           component: Appsearch
+        },
+        {
+          path: ':flag?/mapselect',
+          component: AppMapSelect
         }
       ]
     }

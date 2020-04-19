@@ -7,6 +7,7 @@
       :offsetY="offsetY"
       :showCircle="showCircle"
       :geolocation="geolocation"
+      :isNeedSetCenter="isNeedSetCenter"
       @draging="draging"
       @get-pois="getPois"
     >
@@ -42,7 +43,8 @@ export default {
       geolocation: true,
       offsetY: 220,
       location: '',
-      locationend: false
+      locationend: false,
+      isNeedSetCenter: true
     }
   },
   mounted() {

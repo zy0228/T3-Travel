@@ -52,6 +52,8 @@ export function positionPicker (map, successBk, failBK) {
     positionPicker.on('fail', failBK)
 
     positionPicker.start()
+
+    return positionPicker
   })
 }
 

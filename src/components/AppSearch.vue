@@ -13,7 +13,6 @@
     <transition name="slide">
       <div class="serach-wrapper" v-show="location">
         <suggest
-          ref="ref"
           :query="location"
           @selectItem="selection"
           @list-scroll="listScroll"
@@ -43,6 +42,14 @@ export default {
   },
   created() {
     this.flag = this.$route.params.flag
+
+    if (this.flag === 'home') {
+      this.placeholder = '请输入家地址'
+    }
+
+    if (this.flag === 'company') {
+      this.placeholder = '请输入公司地址'
+    }
   },
   methods: {
     clear() {

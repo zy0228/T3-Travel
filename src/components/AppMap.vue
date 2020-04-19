@@ -64,13 +64,22 @@ export default {
     markerText: {
       type: String,
       default: '在这里上车'
+    },
+    isNeedSetCenter: {
+      type: Boolean,
+      default: false
+    },
+    isneedShowDynamicText: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
     return {
       map: null,
       point: null,
-      positionText: null
+      positionText: null,
+      positionPicker: null
     }
   },
   computed: {
@@ -93,7 +102,8 @@ export default {
 
         const map = new AMap.Map('container', {
           resizeEnable: this.resizeEnable,
-          zoom: this.zoom
+          zoom: this.zoom,
+          mapStyle: mapConfig.style
         })
 
         // 是否需要定位功能
@@ -154,16 +164,25 @@ export default {
 
       this.setCity(city)
       this.fuzzySearch(options, KEYWORD, lnglat, RAOUND_RADIUS)
-      positionPicker(map, this.onPickerSuccess, this.onPickerErr)
+      this.positionPicker = positionPicker(map, this.onPickerSuccess, this.onPickerErr)
       addDragEvent(map, this.dragStartHandler, this.dragingHandler, this.dragEndHandler)
     },
     // 解析定位错误信息
     onError (data) {
       console.log('err', data)
     },
+    /**
+     * {AMap.LngLat}lnglat
+     */
+    start(lnglat) {
+      console.log(lnglat)
+      this.map && this.map.setCenter(lnglat)
+    },
     // 查询附近的标志性建筑
     fuzzySearch (...arg) {
-      this.setCenterPosition(arg[2])
+      if (this.isNeedSetCenter) {
+        this.setCenterPosition(arg[2])
+      }
 
       searchNearBy(...arg)
         .then(result => {
@@ -190,6 +209,11 @@ export default {
                 direction: this.centerPosition[0] > lng ? 'left' : 'right' // 设置文本标注方位
               })
 
+              if (this.isneedShowDynamicText) {
+                let {lng, lat} = pois[0].location
+                this.positionText.setText(pois[0].name)
+              }
+
               this.$emit('get-pois', pois[0])
             }
           }
@@ -201,6 +225,7 @@ export default {
     // 设为拖拽模式初始化成功
     onPickerSuccess (positionResult) {
       if (positionResult.info === RESULT_OK) {
+        console.log(positionResult)
         const { city } = positionResult.regeocode.addressComponent
         const { lng, lat } = positionResult.position
         const options = { city, type: mapConfig.type, showCover: false }
@@ -220,7 +245,7 @@ export default {
           style: {
             'border': 'none',
             'top': '-64px',
-            'right': '-102px',
+            // 'right': '-102px',
             'font-size': '14px'
           },
           position: [lng, lat]
