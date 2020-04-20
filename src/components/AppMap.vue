@@ -11,6 +11,7 @@
 import { mapGetters, mapMutations, mapActions } from 'vuex'
 import mapConfig from 'common/js/config'
 import {
+  dirving,
   mapLoader,
   positionPicker,
   searchNearBy,
@@ -79,7 +80,8 @@ export default {
       map: null,
       point: null,
       positionText: null,
-      positionPicker: null
+      positionPicker: null,
+      dirv: null
     }
   },
   computed: {
@@ -105,6 +107,8 @@ export default {
           zoom: this.zoom,
           mapStyle: mapConfig.style
         })
+
+        this.map = map
 
         // 是否需要定位功能
         if (!this.geolocation) {
@@ -174,9 +178,20 @@ export default {
     /**
      * {AMap.LngLat}lnglat
      */
-    start(lnglat) {
-      console.log(lnglat)
+    setMapCenter(lnglat) {
       this.map && this.map.setCenter(lnglat)
+    },
+    setText(text) {
+      this.positionText && this.positionText.setText(text)
+    },
+    /**
+     * origin 起点
+     * destination 终点
+     * opt 途径点
+     * cb 回调函数
+    */
+    initalDirv(...arg) {
+      dirving(this.map, ...arg)
     },
     // 查询附近的标志性建筑
     fuzzySearch (...arg) {
@@ -225,7 +240,6 @@ export default {
     // 设为拖拽模式初始化成功
     onPickerSuccess (positionResult) {
       if (positionResult.info === RESULT_OK) {
-        console.log(positionResult)
         const { city } = positionResult.regeocode.addressComponent
         const { lng, lat } = positionResult.position
         const options = { city, type: mapConfig.type, showCover: false }
@@ -302,4 +316,10 @@ export default {
   height 32px
   background url("../common/images/location.png") no-repeat center
   background-size contain
+/deep/ .amap-marker-label
+  background transparent
+  border none
+/deep/ .custom-info
+  width 80px
+  white-space normal
 </style>

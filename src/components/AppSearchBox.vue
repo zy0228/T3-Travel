@@ -91,9 +91,11 @@ export default {
     },
     clearStart() {
       this.startLocation = ''
+      this.$refs.startinput.focus()
     },
     clearEnd() {
       this.endLocation = ''
+      this.$refs.endinput.focus()
     },
     blur() {
       this.$refs.startinput.blur()
@@ -105,6 +107,12 @@ export default {
     },
     focusStart() {
       this.$refs.startinput.focus()
+    },
+    focusSelectS() {
+      this.$refs.startinput.select()
+    },
+    focusSelectE() {
+      this.$refs.endinput.select()
     },
     onfocusEnd() {
       this.endFocus = true

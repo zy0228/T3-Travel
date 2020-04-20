@@ -347,11 +347,17 @@ export default {
         this.saveEnd(new Pois(item))
         this.$nextTick(() => {
           this.$refs.searchBox.setEndLoaction(item.name)
+          if (this.startPois.id)  return
+          this.$refs.searchBox.focusStart()
+          this.$refs.searchBox.focusSelectS()
         })
       } else {
         this.saveStart(new Pois(item))
         this.$nextTick(() => {
           this.$refs.searchBox.setStartLocation(item.name)
+          if (this.endPois.id)  return
+          this.$refs.searchBox.focusEnd()
+          this.$refs.searchBox.focusSelectE()
         })
       }
     },
@@ -393,7 +399,9 @@ export default {
         newV === startName  &&
         this.query2 === endName
       ) {
-        console.log('哦了铁子')
+        this.$router.push({
+          path: '/search/driving'
+        })
       }
     },
     query2(newV) {
@@ -402,11 +410,12 @@ export default {
 
       if (!this.startPois.name || !this.endPois.name) return
 
-      console.log(this.query1 === startName)
       if (newV === endName &&
       this.query1 === startName
       ) {
-        console.log('欧了铁子')
+        this.$router.push({
+          path: '/search/driving'
+        })
       }
     },
     poinWay() {

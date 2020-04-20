@@ -94,7 +94,6 @@ export function addDragEvent (map, dragStart, draging, dragEnd = () => {}) {
     typeof dragStart !== 'function' ||
     typeof dragEnd !== 'function') return
 
-  console.info('开始监听拖动事件...')
   map.on('dragstart', dragStart)
   map.on('dragging', draging)
   map.on('dragend', dragEnd)
@@ -124,11 +123,12 @@ export function createPositionText (config) {
   }, config, { style }))
 }
 
-export function creatPointMarker (position) {
+export function creatPointMarker (position, offset) {
   let pointDom = `<div class="custom-point"></div>`
 
   return new AMap.Marker({
     position,
+    offset: new AMap.Pixel(offset ? offset.x : 0, offset ? offset.y : 0),
     // 将 html 传给 content
     content: pointDom
   })
@@ -145,7 +145,7 @@ export function searchPlace({ keyword, city, pageSize, pageIndex }) {
         pageIndex
       }
 
-      let autoComplete = new AMap.PlaceSearch(autoOptions);
+      let autoComplete = new AMap.PlaceSearch(autoOptions)
       autoComplete.search(keyword, function(status, result) {
         if (status === 'complete') {
           resolve(result)
@@ -154,5 +154,93 @@ export function searchPlace({ keyword, city, pageSize, pageIndex }) {
         }
       })
     })
+  })
+}
+
+export function dirving(map, origin, destination, opt = {}, name) {
+  AMap.plugin('AMap.Driving', function() {
+    var driving = new AMap.Driving({
+      policy: AMap.DrivingPolicy.LEAST_TIME,
+      ferry: 1,
+      map: map,
+      autoFitView: true
+    })
+    
+    driving.search(origin, destination, opt, function(status, result) {
+      if (status === 'complete') {
+        if (result.routes && result.routes.length) {
+          let startLoction = result.start.location
+          let endLocation = result.end.location
+          console.log(result)
+          drawRoute(result.routes[0])
+          setMarker([startLoction.lng, startLoction.lat], [endLocation.lng, endLocation.lat])
+        }
+      }
+    })
+
+    function setMarker(start, end) {
+      let startPoi = creatPointMarker(start, {x: 4, y: -10})
+      let endPoi = creatPointMarker(end, {x: 4, y: -10})
+
+      startPoi.setMap(map)
+      endPoi.setMap(map)
+
+      startPoi.setLabel({
+        // offset: new AMap.Pixel(0 , 0),  //设置文本标注偏移量
+        content: `<div class='custom-info'>${name.start}</div>`
+      })
+
+      endPoi.setLabel({
+        // offset: new AMap.Pixel(0 , 0),  //设置文本标注偏移量
+        content: `<div class='custom-info'>${name.end}</div>`
+      })
+    }
+
+    function drawRoute (route) {
+        var path = parseRouteToPath(route)
+
+        var startMarker = new AMap.Marker({
+            position: path[0],
+            icon: 'https://webapi.amap.com/theme/v1.3/markers/n/start.png',
+            map: map
+        })
+ 
+        var endMarker = new AMap.Marker({
+            position: path[path.length - 1],
+            icon: 'https://webapi.amap.com/theme/v1.3/markers/n/end.png',
+            map: map
+        })
+
+        var routeLine = new AMap.Polyline({
+            path: path,
+            isOutline: true,
+            outlineColor: '#5FBC3A',
+            borderWeight: 2,
+            strokeWeight: 5,
+            strokeColor: '#5FBC3A',
+            lineJoin: 'round',
+            zIndex: 100
+        })
+
+        routeLine.setMap(map)
+
+        // 调整视野达到最佳显示区域
+        map.setFitView([ startMarker, endMarker, routeLine ])
+    }
+
+    // helper
+    function parseRouteToPath(route) {
+        var path = []
+
+        for (var i = 0, l = route.steps.length; i < l; i++) {
+            var step = route.steps[i]
+
+            for (var j = 0, n = step.path.length; j < n; j++) {
+              path.push(step.path[j])
+            }
+        }
+
+        return path
+    }
   })
 }

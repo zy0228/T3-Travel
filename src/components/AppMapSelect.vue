@@ -42,6 +42,7 @@ import AppMap from 'components/AppMap'
 import { mapGetters, mapActions } from 'vuex'
 import Poi from 'common/js/poi'
 import Suggest from 'components/AppSuggest'
+import { debounce } from 'common/js/util'
 
 export default {
   data() {
@@ -55,13 +56,23 @@ export default {
       isneedShowDynamicText: true,
       isFocus: false,
       pois: null,
-      query: ''
+      query: '',
+      selected: false
     }
   },
   computed: {
     ...mapGetters([
       'city'
     ])
+  },
+  created() {
+    this.$watch('location', debounce((newVal) => {
+      if (!this.isFocus) {
+        return
+      }
+
+      this.query = newVal
+    }, 200))
   },
   methods: {
     cancel() {
@@ -80,10 +91,17 @@ export default {
     },
     getPois(pois) {
       let { name } = pois
-      this.location = name
-      this.pois = new Poi(pois)
       this.isFocus = false
       this.$refs.searchBox.blur()
+
+      if (this.selected) {
+        this.selected = false
+        return
+      }
+
+      this.isneedShowDynamicText = true
+      this.location = name
+      this.pois = new Poi(pois)
     },
     select() {
       let flag = this.$route.params.flag
@@ -99,15 +117,25 @@ export default {
       this.$router.back()
     },
     selection(item) {
+      this.selected = true
       this.query = ''
-      console.log(item)
+      this.isFocus = false
+      this.isneedShowDynamicText = false
+
       let poi = new Poi(item)
       let { lng, lat } = poi.location
-
       let position  = [lng, lat]
+
+      this.pois = poi
+
       setTimeout(() => {
-        this.$refs.map.start(position)
-      }, 10)
+        // this.location = poi.name
+        this.$nextTick(() => {
+          this.$refs.map.setMapCenter(position)
+          this.$refs.map.setText(poi.name)
+          this.location = poi.sname || poi.name
+        })
+      }, 20)
     },
     listScroll() {
       this.$refs.searchBox.blur()
@@ -120,15 +148,6 @@ export default {
   components: {
     AppMap,
     Suggest
-  },
-  watch: {
-    location(newV) {
-      if (!this.isFocus) {
-        return
-      }
-
-      this.query = newV
-    }
   }
 }
 </script>
