@@ -123,8 +123,9 @@ export function createPositionText (config) {
   }, config, { style }))
 }
 
-export function creatPointMarker (position, offset) {
-  let pointDom = `<div class="custom-point"></div>`
+// 如果isShow为ture 还需要搭配你页面上的css
+export function creatPointMarker (isShowCircle, position, offset) {
+  let pointDom = isShowCircle ? `<div class="custom-point"></div>` : `<div class="custom-noShow-point"></div>`
 
   return new AMap.Marker({
     position,
@@ -134,19 +135,19 @@ export function creatPointMarker (position, offset) {
   })
 }
 
-export function searchPlace({ keyword, city, pageSize, pageIndex }) {
+export function searchPlace ({ keyword, city, pageSize, pageIndex }) {
   return new Promise((resolve, reject) => {
     AMap.service('AMap.PlaceSearch', () => {
       let autoOptions = {
-        city: city ? city : '南京',
-        children: 1,                 // show children
+        city: city || '南京',
+        children: 1, // show children
         type: mapConfig.type,
         pageSize,
         pageIndex
       }
 
       let autoComplete = new AMap.PlaceSearch(autoOptions)
-      autoComplete.search(keyword, function(status, result) {
+      autoComplete.search(keyword, function (status, result) {
         if (status === 'complete') {
           resolve(result)
         } else {
@@ -157,11 +158,27 @@ export function searchPlace({ keyword, city, pageSize, pageIndex }) {
   })
 }
 
-export function dirving(map, origin, destination, opt = {}, name) {
+export function dirving (map, origin, destination, opt, name) {
+  console.log(opt)
+  let poiWay = {}
   let thePrice = ''
+  let poinList = []
+  let nameList = []
+
+  if (opt.length > 0) {
+    opt.forEach(item => {
+      if (item.location) {
+        let { lng, lat } = item.location
+        poinList.push([lng, lat])
+        nameList.push(item.name)
+      }
+    })
+
+    poiWay['waypoints'] = poinList
+  }
 
   return new Promise((resolve, reject) => {
-    AMap.plugin('AMap.Driving', function() {
+    AMap.plugin('AMap.Driving', function () {
       var driving = new AMap.Driving({
         policy: AMap.DrivingPolicy.LEAST_TIME,
         ferry: 1,
@@ -169,13 +186,28 @@ export function dirving(map, origin, destination, opt = {}, name) {
         autoFitView: true,
         hideMarkers: true
       })
-      
-      driving.search(origin, destination, opt, function(status, result) {
+
+      driving.search(origin, destination, poiWay, function (status, result) {
         if (status === 'complete') {
           if (result.routes && result.routes.length) {
             let startLoction = result.start.location
             let endLocation = result.end.location
+            let waypoints = result.waypoints
             console.log(result)
+
+            if (waypoints.length > 0) {
+              // add pointway marker and show name
+              waypoints.forEach((item, index) => {
+                let { lng, lat } = item.location
+                let point = creatPointMarker(true, [lng, lat])
+                point.setMap(map)
+                point.setLabel({
+                  // offset: new AMap.Pixel(0 , 0),  //设置文本标注偏移量
+                  content: `<div class='custom-info'>${nameList[index]}</div>`
+                })
+              })
+            }
+
             drawRoute(result.routes[0])
             setMarker([startLoction.lng, startLoction.lat], [endLocation.lng, endLocation.lat])
             setTextMarker([startLoction.lng, startLoction.lat], [endLocation.lng, endLocation.lat], result)
@@ -187,15 +219,15 @@ export function dirving(map, origin, destination, opt = {}, name) {
   })
 
   // hepler  =======================================================================
-  function setTextMarker(start, end, result) {
+  function setTextMarker (start, end, result) {
     // createPositionText
     let routes = result.routes[0]
     let totoalTime = routes.time
     let distance = (routes.distance / 1000).toFixed(1)
     let date = new Date()
     let min = date.getMinutes()
-    let startPoi = creatPointMarker(start, {x: -45, y: -75})
-    let endPoi = creatPointMarker(end, {x: -65, y: -90})
+    let startPoi = creatPointMarker(false, start, { x: -45, y: -75 })
+    let endPoi = creatPointMarker(false, end, { x: -65, y: -90 })
     let unit = ''
     let startTime = 5
     let endtime = 0
@@ -254,9 +286,9 @@ export function dirving(map, origin, destination, opt = {}, name) {
     })
   }
 
-  function setMarker(start, end) {
-    let startPoi = creatPointMarker(start, {x: 4, y: -10})
-    let endPoi = creatPointMarker(end, {x: 4, y: -10})
+  function setMarker (start, end) {
+    let startPoi = creatPointMarker(false, start, { x: 4, y: -10 })
+    let endPoi = creatPointMarker(false, end, { x: 4, y: -10 })
 
     startPoi.setMap(map)
     endPoi.setMap(map)
@@ -273,50 +305,50 @@ export function dirving(map, origin, destination, opt = {}, name) {
   }
 
   function drawRoute (route) {
-      var path = parseRouteToPath(route)
-      let startDom = document.createElement('div')
-      let endDom = document.createElement('div')
-      startDom.className = 'custom-startMarker-wrapper'
-      endDom.className = 'custom-endMarkder-wrapper'
+    var path = parseRouteToPath(route)
+    let startDom = document.createElement('div')
+    let endDom = document.createElement('div')
+    startDom.className = 'custom-startMarker-wrapper'
+    endDom.className = 'custom-endMarkder-wrapper'
 
-      var startMarker = new AMap.Marker({
-          position: path[0],
-          content: startDom,
-          map: map
-      })
+    var startMarker = new AMap.Marker({
+      position: path[0],
+      content: startDom,
+      map: map
+    })
 
-      var endMarker = new AMap.Marker({
-          position: path[path.length - 1],
-          content: endDom,
-          map: map
-      })
+    var endMarker = new AMap.Marker({
+      position: path[path.length - 1],
+      content: endDom,
+      map: map
+    })
 
-      var routeLine = new AMap.Polyline({
-          path: path,
-          isOutline: true,
-          outlineColor: '#5FBC3A',
-          borderWeight: 2,
-          strokeWeight: 5,
-          strokeColor: '#5FBC3A',
-          lineJoin: 'round',
-          zIndex: 100
-      })
+    var routeLine = new AMap.Polyline({
+      path: path,
+      isOutline: true,
+      outlineColor: '#5FBC3A',
+      borderWeight: 2,
+      strokeWeight: 5,
+      strokeColor: '#5FBC3A',
+      lineJoin: 'round',
+      zIndex: 100
+    })
 
-      routeLine.setMap(map)
+    routeLine.setMap(map)
 
-      // 调整视野达到最佳显示区域
-      map.setFitView([ startMarker, endMarker, routeLine ])
+    // 调整视野达到最佳显示区域
+    map.setFitView([ startMarker, endMarker, routeLine ])
   }
   // helper
-  function parseRouteToPath(route) {
+  function parseRouteToPath (route) {
     var path = []
 
     for (var i = 0, l = route.steps.length; i < l; i++) {
-        var step = route.steps[i]
+      var step = route.steps[i]
 
-        for (var j = 0, n = step.path.length; j < n; j++) {
-          path.push(step.path[j])
-        }
+      for (var j = 0, n = step.path.length; j < n; j++) {
+        path.push(step.path[j])
+      }
     }
 
     return path

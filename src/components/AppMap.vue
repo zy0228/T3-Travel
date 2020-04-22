@@ -103,7 +103,7 @@ export default {
     }, 200)
   },
   methods: {
-    setBottom() {
+    setBottom () {
       this.$refs.map.style.bottom = '285px'
     },
     mpInital () {
@@ -192,13 +192,10 @@ export default {
     onError (data) {
       console.log('err', data)
     },
-    /**
-     * {AMap.LngLat}lnglat
-     */
-    setMapCenter(lnglat) {
+    setMapCenter (lnglat) {
       this.map && this.map.setCenter(lnglat)
     },
-    setText(text) {
+    setText (text) {
       this.positionText && this.positionText.setText(text)
     },
     /**
@@ -206,15 +203,16 @@ export default {
      * destination 终点
      * opt 途径点
      * cb 回调函数
+     *  ======================处理规划路线================
     */
-    initalDirv(...arg) {
+    initalDirv (...arg) {
       dirving(this.map, ...arg).then(res => {
         if (res) {
           this.setPrice(+res)
         }
       })
     },
-    // 查询附近的标志性建筑
+    // =====================POI查询======================
     fuzzySearch (...arg) {
       if (this.isNeedSetCenter) {
         this.setCenterPosition(arg[2])
@@ -237,7 +235,7 @@ export default {
               }
 
               // 创建光点
-              this.point = creatPointMarker([lng, lat])
+              this.point = creatPointMarker(true, [lng, lat])
               this.point.setMap(this.map)
               this.point.setLabel({
                 // offset: new AMap.Pixel(0 , 0),  //设置文本标注偏移量
@@ -245,8 +243,9 @@ export default {
                 direction: this.centerPosition[0] > lng ? 'left' : 'right' // 设置文本标注方位
               })
 
+              // 当地图组件用于滑动选取目的地的时候，需要滑动结束显示位置
               if (this.isneedShowDynamicText) {
-                let {lng, lat} = pois[0].location
+                let { lng, lat } = pois[0].location
                 this.positionText.setText(pois[0].name)
               }
 
@@ -265,12 +264,11 @@ export default {
         const { lng, lat } = positionResult.position
         const options = { city, type: mapConfig.type, showCover: false }
 
-        // 如果已经创建了text,就无需再次创建了 改变状态及位置
+        // 如果已经创建了textMarker,就无需再次创建了 改变状态及位置
         if (this.positionText) {
           this.positionText.setPosition([lng, lat])
           this.positionText.show()
 
-          // 拿附近的标志性建筑
           this.fuzzySearch(options, KEYWORD, [lng, lat], RAOUND_RADIUS)
           return
         }
@@ -312,7 +310,7 @@ export default {
       this.drag.inital = false
       this.$emit('drag-end')
     },
-    destory() {
+    destory () {
       this.map && this.map.destroy()
     },
     ...mapMutations({
@@ -345,4 +343,5 @@ export default {
 /deep/ .custom-info
   width 80px
   white-space normal
+  margin-left 5px
 </style>

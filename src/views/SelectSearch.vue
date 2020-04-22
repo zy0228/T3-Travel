@@ -9,7 +9,7 @@
         <span v-else>正在查找...</span>
         <span class="icon-expand_more"></span>
       </div>
-      <div class="done" :class="{'light' : isAlready}">
+      <div class="done" @click="goDirving" :class="{'light' : isAlready}">
         <span>完成</span>
       </div>
     </header>
@@ -95,7 +95,6 @@ import MyTag from 'components/MyTag'
 import Way from 'common/js/way'
 import Pois from 'common/js/poi'
 import Confirm from 'components/BaseConfirm'
-import MapSelect from 'components/AppMapSelect'
 
 const CONTENT_TOP = 167
 const HISTORY_TOP = 242
@@ -104,7 +103,7 @@ const SEARCH_RESULT = 178
 const ITEM_HEIGHT = 40
 
 export default {
-  data() {
+  data () {
     return {
       startPlaceholder: '请输入您的起点位置',
       edit: true,
@@ -131,39 +130,39 @@ export default {
       'endPois',
       'poinWayList'
     ]),
-    isShowAdd() {
+    isShowAdd () {
       return this.poinWay.length < 3
     },
-    contentTop() {
-      let top = (this.poinWay.length * ITEM_HEIGHT) +  CONTENT_TOP
+    contentTop () {
+      let top = (this.poinWay.length * ITEM_HEIGHT) + CONTENT_TOP
       return `${top}px`
     },
-    histroyTop() {
-      let top = (this.poinWay.length * ITEM_HEIGHT) +  HISTORY_TOP
+    histroyTop () {
+      let top = (this.poinWay.length * ITEM_HEIGHT) + HISTORY_TOP
       return `${top}px`
     },
-    historyWrapperTop() {
-      let top = (this.poinWay.length * ITEM_HEIGHT) +  HISTORY_WRAPPER
+    historyWrapperTop () {
+      let top = (this.poinWay.length * ITEM_HEIGHT) + HISTORY_WRAPPER
       return `${top}px`
     },
-    searchResultTop() {
-      let top = (this.poinWay.length * ITEM_HEIGHT) +  SEARCH_RESULT
+    searchResultTop () {
+      let top = (this.poinWay.length * ITEM_HEIGHT) + SEARCH_RESULT
       return `${top}px`
     },
-    clonePoinWay() {
+    clonePoinWay () {
       return JSON.parse(JSON.stringify(this.poinWay))
     },
-    isAlready() {
+    isAlready () {
       return this.query1Ready && this.query2Ready && !this.poiWayReady
     }
   },
-  created() {
+  created () {
     setTimeout(() => {
       this.delayShow = true
       this.receive()
     }, (150))
   },
-  beforeRouteUpdate(to, from, next) {
+  beforeRouteUpdate (to, from, next) {
     let { path, params } = from
 
     if (/favorite|mapselect$/.test(path)) {
@@ -172,7 +171,7 @@ export default {
         if (name) {
           this.$refs.searchBox.setStartLocation(name)
         }
-      } else if (params.flag === 'end'){
+      } else if (params.flag === 'end') {
         let name = this.endPois.name
         if (name) {
           this.$refs.searchBox.setEndLoaction(name)
@@ -187,24 +186,22 @@ export default {
         if (index > -1 && theIndex > -1) {
           this.$set(this.poinWay[index], 'value', this.poinWayList[theIndex].name)
         }
-
       }
     }
 
     next()
   },
   methods: {
-    back() {
+    back () {
       this.$router.back()
     },
-    receive() {
-      let {start} = this.$route.query
+    receive () {
+      let { start } = this.$route.query
 
       if (start === 'start') {
         this.$nextTick(() => {
           this.$refs.searchBox.focusStart()
           this.first = false
-          return
         })
       }
 
@@ -220,7 +217,7 @@ export default {
         // todo: 结算
       }
     },
-    addWay() {
+    addWay () {
       let len = this.poinWay.length
       if (len === 3) {
         return
@@ -229,14 +226,14 @@ export default {
       let newWay = new Way(len, this.id++, '', len)
       this.poinWay.push(newWay)
     },
-    deleteItem(index) {
+    deleteItem (index) {
       let delIndex = this.poinWay.findIndex(item => {
         return item.id === index
       })
 
       let i = this.poinWayList.findIndex(item => item.id === index)
 
-      if (delIndex != -1) {
+      if (delIndex !== -1) {
         this.poinWay.splice(delIndex, 1)
         // this.setPoinWay(this.poiWayRemove(delIndex))
       }
@@ -252,7 +249,7 @@ export default {
         })
       })
     },
-    startQuery(query) {
+    startQuery (query) {
       let queryFormat = query.trim()
 
       if (this.first) {
@@ -272,7 +269,7 @@ export default {
       this.query1 = queryFormat
       this.queryIsEnd = false
     },
-    endQuery(query) {
+    endQuery (query) {
       let queryFormat = query.trim()
       // let name = this.endPois.name || ''
       // if (queryFormat === name) {
@@ -285,22 +282,21 @@ export default {
       this.query2 = queryFormat
       this.queryIsEnd = true
     },
-    onfocusStart() {
+    onfocusStart () {
       this.focusIsEnd = false
       this.focusId = null
     },
-    onfocusEnd() {
+    onfocusEnd () {
       this.focusIsEnd = true
       this.focusId = null
     },
-    listScroll() {
+    listScroll () {
       this.$refs.searchBox.blur()
     },
-    selection(item) {
+    selection (item) {
       let poi = new Pois(item)
 
       if (this.focusId !== null) {
-
         // change input value
         this.setPoinWayValue(item)
       } else {
@@ -310,7 +306,7 @@ export default {
 
       this.saveSearch(poi)
     },
-    setPoinWayValue(item) {
+    setPoinWayValue (item) {
       let poiWay = {
         id: this.focusId,
         name: item.name.trim(),
@@ -328,13 +324,13 @@ export default {
         this.$set(this.poinWay[index], 'value', item.name)
       }
     },
-    star(item) {
+    star (item) {
       this.saveFavoritesTag(item.id)
     },
-    clearHistory() {
+    clearHistory () {
       this.$refs.confirm.show()
     },
-    selectTag(flag, item) {
+    selectTag (flag, item) {
       if (flag === 'home') {
         if (item.id) {
           if (this.focusId !== null) {
@@ -372,18 +368,23 @@ export default {
         }
       }
     },
-    slectSearch(item) {
+    slectSearch (item) {
       if (this.focusId !== null) {
         this.setPoinWayValue(item)
         return
       }
       this.setLocation(item)
     },
-    focusList(id) {
+    goDirving () {
+      if (!this.isAlready) return
+
+      this.$router.push('/driving')
+    },
+    focusList (id) {
       // current focus input
       this.focusId = +id
     },
-    mapSelect() {
+    mapSelect () {
       if (this.focusId === null) {
         this.$router.push({
           path: `/search/${this.focusIsEnd ? 'end' : 'start'}/mapselect`
@@ -394,10 +395,10 @@ export default {
         })
       }
     },
-    sort(items) {
+    sort (items) {
       let i = items.length
 
-      while(i--) {
+      while (i--) {
         let id = +items[i].data.dataset.id
         let order = items[i].order
 
@@ -414,17 +415,17 @@ export default {
       // sort
       this.poinWay.sort((a, b) => a.order - b.order)
     },
-    getCurrentIndex(id) {
+    getCurrentIndex (id) {
       return this.poinWay.findIndex(item => {
         return +item.id === +id
       })
     },
-    setLocation(item) {
+    setLocation (item) {
       if (this.focusIsEnd) {
         this.saveEnd(new Pois(item))
         this.$nextTick(() => {
           this.$refs.searchBox.setEndLoaction(item.name)
-          if (this.startPois.id)  return
+          if (this.startPois.id) return
           this.$refs.searchBox.focusStart()
           this.$refs.searchBox.focusSelectS()
         })
@@ -432,13 +433,13 @@ export default {
         this.saveStart(new Pois(item))
         this.$nextTick(() => {
           this.$refs.searchBox.setStartLocation(item.name)
-          if (this.endPois.id)  return
+          if (this.endPois.id) return
           this.$refs.searchBox.focusEnd()
           this.$refs.searchBox.focusSelectE()
         })
       }
     },
-    poiWayPush(item) {
+    poiWayPush (item) {
       let way = JSON.parse(JSON.stringify(this.poinWayList))
 
       let id = item.id
@@ -451,7 +452,7 @@ export default {
       way.push(item)
       return way
     },
-    poiWayRemove(index) {
+    poiWayRemove (index) {
       let way = JSON.parse(JSON.stringify(this.poinWayList))
       way.splice(index, 1)
 
@@ -475,11 +476,10 @@ export default {
     MyTag,
     Suggest,
     SearchList,
-    Confirm,
-    MapSelect
+    Confirm
   },
   watch: {
-    query(newVal) {
+    query (newVal) {
       // console.log('query的值', newVal)
       if (!newVal) {
         this.$nextTick(() => {
@@ -487,7 +487,7 @@ export default {
         })
       }
     },
-    query1(newV) {
+    query1 (newV) {
       let startName = this.startPois && this.startPois.name
 
       if (newV === startName) {
@@ -495,10 +495,10 @@ export default {
         this.query = ''
       } else {
         this.query1Ready = false
-        this.saveStart(new Object())
+        this.saveStart(Object.create({}))
       }
     },
-    query2(newV) {
+    query2 (newV) {
       let endName = this.endPois && this.endPois.name
 
       if (newV === endName) {
@@ -510,7 +510,7 @@ export default {
       }
     },
     clonePoinWay: {
-      handler(cur, pre) {
+      handler (cur, pre) {
         if (!cur.length) {
           this.focusId = null
           this.query = ''
@@ -559,8 +559,14 @@ export default {
       deep: true
     },
     isAlready: {
-      handler(newv) {
+      handler (newv) {
         console.log(newv)
+
+        if (this.focusId === null && newv) {
+          this.$nextTick(() => {
+            this.$router.push('/driving')
+          })
+        }
       },
       deep: true
     }
@@ -698,8 +704,8 @@ export default {
 .fade-enter, .fade-leave-to
   transform translate3d(100%, 0, 0)
 
-/deep/ .bscroll-vertical-scrollbar
+.bscroll-vertical-scrollbar
   width 5px!important
-  /deep/.bscroll-indicator
-    background #A9A9A9!important
+.bscroll-indicator
+  background #A9A9A9!important
 </style>

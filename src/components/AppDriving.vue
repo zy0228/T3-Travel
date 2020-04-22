@@ -66,28 +66,29 @@ import AppMap from 'components/AppMap'
 import { mapGetters } from 'vuex'
 
 export default {
-  data() {
+  data () {
     return {
       offsetY: 300,
       showCircle: false,
       geolocation: false,
-      expectPrice:6.3
+      expectPrice: 6.3
     }
   },
   computed: {
     ...mapGetters([
       'startPois',
       'endPois',
-      'price'
+      'price',
+      'poinWayList'
     ])
   },
   methods: {
-    initalMap() {
+    initalMap () {
       this.$nextTick(() => {
         this.setDriving()
       })
     },
-    setDriving() {
+    setDriving () {
       const startLng = this.startPois.location.lng
       const startLat = this.startPois.location.lat
       const endLng = this.endPois.location.lng
@@ -95,7 +96,7 @@ export default {
 
       const startP = [startLng, startLat]
       const endP = [endLng, endLat]
-      const opt = {}
+      let opt = JSON.parse(JSON.stringify(this.poinWayList)) || []
 
       const name = {
         start: this.startPois.name,
@@ -104,17 +105,17 @@ export default {
 
       this.$refs.map.initalDirv(startP, endP, opt, name)
     },
-    callback(status, result) {
+    callback (status, result) {
       console.log('giaogiaogiao', status, result)
     },
-    back() {
+    back () {
       this.$router.push({
         path: '/'
       })
     }
   },
   filters: {
-    tofixed(val) {
+    tofixed (val) {
       if (!val) return
       val = +val
       return val.toFixed(2)
@@ -232,7 +233,7 @@ export default {
         padding 10px
         .icon-navigate_nextchevron_right
           vertical-align: middle
-        
+
     .call
       margin 6px
       height 44px
@@ -244,7 +245,6 @@ export default {
       font-size 16px
       font-weight 600
       margin-bottom 30px
-
 
 /deep/ .amap-logo
   display none!important
@@ -282,4 +282,11 @@ export default {
   .text-o
     color $color-text-o
     font-weight 600
+/deep/ .custom-point
+  width 4px
+  height 4px
+  border-radius 50%
+  background transparent
+  border 2px solid #111
+  margin-right 2px
 </style>

@@ -8,7 +8,7 @@ import VConsole from 'vconsole'
 import 'common/stylus/index.styl'
 
 Vue.config.productionTip = false
-const vConsole = new VConsole()
+// const vConsole = new VConsole()
 
 // fastclick.attach(document.body)
 
