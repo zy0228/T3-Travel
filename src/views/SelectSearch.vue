@@ -178,7 +178,16 @@ export default {
           this.$refs.searchBox.setEndLoaction(name)
         }
       } else {
-        throw new Error('check your router, params is exception ')
+        // throw new Error('check your router, params is exception ')
+        if (this.focusId === null) return
+
+        let index = this.getCurrentIndex(this.focusId)
+        let theIndex = this.poinWayList.findIndex(item => item.id === this.focusId)
+
+        if (index > -1 && theIndex > -1) {
+          this.$set(this.poinWay[index], 'value', this.poinWayList[theIndex].name)
+        }
+
       }
     }
 
@@ -225,8 +234,15 @@ export default {
         return item.id === index
       })
 
+      let i = this.poinWayList.findIndex(item => item.id === index)
+
       if (delIndex != -1) {
         this.poinWay.splice(delIndex, 1)
+        // this.setPoinWay(this.poiWayRemove(delIndex))
+      }
+
+      if (i > -1) {
+        this.setPoinWay(this.poiWayRemove(i))
       }
 
       // 重新改变一下id
@@ -255,7 +271,6 @@ export default {
       this.query = queryFormat
       this.query1 = queryFormat
       this.queryIsEnd = false
-      this.focusId = null
     },
     endQuery(query) {
       let queryFormat = query.trim()
@@ -269,13 +284,14 @@ export default {
       this.query = queryFormat
       this.query2 = queryFormat
       this.queryIsEnd = true
-      this.focusId = null
     },
     onfocusStart() {
       this.focusIsEnd = false
+      this.focusId = null
     },
     onfocusEnd() {
       this.focusIsEnd = true
+      this.focusId = null
     },
     listScroll() {
       this.$refs.searchBox.blur()
@@ -284,26 +300,29 @@ export default {
       let poi = new Pois(item)
 
       if (this.focusId !== null) {
-        let poiWay = {
-          id: this.focusId,
-          name: item.name.trim(),
-          location: item.location
-        }
-
-        let poiWayList = this.poiWayPush(poiWay)
-        this.setPoinWay(poiWayList)
 
         // change input value
-        this.setPoinWayValue()
+        this.setPoinWayValue(item)
       } else {
         this.setLocation(item)
+        this.query = ''
       }
 
       this.saveSearch(poi)
-
-      this.query = ''
     },
-    setPoinWayValue() {
+    setPoinWayValue(item) {
+      let poiWay = {
+        id: this.focusId,
+        name: item.name.trim(),
+        location: item.location
+      }
+
+      let poiWayList = this.poiWayPush(poiWay)
+
+      // add state
+      this.setPoinWay(poiWayList)
+
+      // set poinway value
       let index = this.getCurrentIndex(this.focusId)
       if (index > -1) {
         this.$set(this.poinWay[index], 'value', item.name)
@@ -318,6 +337,10 @@ export default {
     selectTag(flag, item) {
       if (flag === 'home') {
         if (item.id) {
+          if (this.focusId !== null) {
+            this.setPoinWayValue(item)
+            return
+          }
           this.setLocation(item)
         } else {
           this.$router.push({
@@ -326,6 +349,11 @@ export default {
         }
       } else if (flag === 'company') {
         if (item.id) {
+          if (this.focusId !== null) {
+            this.setPoinWayValue(item)
+            return
+          }
+
           this.setLocation(item)
         } else {
           this.$router.push({
@@ -333,12 +361,22 @@ export default {
           })
         }
       } else {
-        this.$router.push({
-          path: `/search/${this.focusIsEnd ? 'end' : 'start'}/favorite`
-        })
+        if (this.focusId === null) {
+          this.$router.push({
+            path: `/search/${this.focusIsEnd ? 'end' : 'start'}/favorite`
+          })
+        } else {
+          this.$router.push({
+            path: `/search/${this.focusId}/favorite`
+          })
+        }
       }
     },
     slectSearch(item) {
+      if (this.focusId !== null) {
+        this.setPoinWayValue(item)
+        return
+      }
       this.setLocation(item)
     },
     focusList(id) {
@@ -346,9 +384,15 @@ export default {
       this.focusId = +id
     },
     mapSelect() {
-      this.$router.push({
+      if (this.focusId === null) {
+        this.$router.push({
           path: `/search/${this.focusIsEnd ? 'end' : 'start'}/mapselect`
         })
+      } else {
+        this.$router.push({
+          path: `/search/${this.focusId}/mapselect`
+        })
+      }
     },
     sort(items) {
       let i = items.length
@@ -396,6 +440,14 @@ export default {
     },
     poiWayPush(item) {
       let way = JSON.parse(JSON.stringify(this.poinWayList))
+
+      let id = item.id
+      let index = this.poinWayList.findIndex(item => item.id === id)
+
+      if (index > -1) {
+        way = this.poiWayRemove(index)
+      }
+
       way.push(item)
       return way
     },
@@ -428,7 +480,7 @@ export default {
   },
   watch: {
     query(newVal) {
-      console.log('query的值', newVal)
+      // console.log('query的值', newVal)
       if (!newVal) {
         this.$nextTick(() => {
           this.$refs.searchList.refresh()
@@ -475,9 +527,10 @@ export default {
 
         // change query to search ==================================
         let index = cur.findIndex((item) => item.id === this.focusId)
+        let pIndex = this.poinWayList.findIndex(item => item.id === +this.focusId)
 
         if (index > -1) {
-          if (this.query === cur[index].value) {
+          if (this.poinWayList.length > 0 && pIndex > -1 && this.poinWayList[pIndex].name === cur[index].value.trim()) {
             this.query = ''
           } else {
             this.query = cur[index].value
@@ -501,8 +554,6 @@ export default {
 
         if (this.poiWayReady) {
           this.setPoinWay(this.poiWayRemove(findIndex))
-        } else {
-          this.query = ''
         }
       },
       deep: true

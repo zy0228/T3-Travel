@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
+import { mapGetters, mapMutations,  mapActions } from 'vuex'
 import NoResult from 'components/BaseNoResult'
 import Scroll from 'components/BaseScroll'
 import Collection from 'common/js/collection'
@@ -60,7 +60,8 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'searchHistory'
+      'searchHistory',
+      'poinWayList'
     ]),
     favorite() {
       return this.searchHistory.filter(item => item.favorite)
@@ -88,13 +89,39 @@ export default {
 
       if (flag === 'start') {
         this.saveStart(pois)
-      }
-
-      if (flag === 'end') {
+      } else if (flag === 'end') {
         this.saveEnd(pois)
+      } else {
+        let poinway = {
+          id: +flag,
+          name: item.name.trim(),
+          location: item.location
+        }
+
+        let poinWayList = this.poiWayPush(poinway)
+        this.setPoinWay(poinWayList)
       }
 
       this.$router.back()
+    },
+    poiWayPush(item) {
+      let way = JSON.parse(JSON.stringify(this.poinWayList))
+
+      let id = item.id
+      let index = this.poinWayList.findIndex(item => item.id === id)
+
+      if (index > -1) {
+        way = this.poiWayRemove(index)
+      }
+
+      way.push(item)
+      return way
+    },
+    poiWayRemove(index) {
+      let way = JSON.parse(JSON.stringify(this.poinWayList))
+      way.splice(index, 1)
+
+      return way
     },
     touchStart(e) {
       let touchEvent = e.touches[0]
@@ -126,6 +153,9 @@ export default {
       this.targetItem.onDragEnd()
       this.touches = []
     },
+    ...mapMutations({
+      setPoinWay: 'SET_POINWAY'
+    }),
     ...mapActions([
       'saveFavoritesTag',
       'saveStart',

@@ -187,6 +187,7 @@ export default {
       input
         flex 1
         height 25px
+        font-size 16px
       .icon-menu
         color #676767
         width 25px

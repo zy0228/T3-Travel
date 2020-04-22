@@ -39,7 +39,7 @@
 
 <script>
 import AppMap from 'components/AppMap'
-import { mapGetters, mapActions } from 'vuex'
+import { mapGetters, mapActions, mapMutations } from 'vuex'
 import Poi from 'common/js/poi'
 import Suggest from 'components/AppSuggest'
 import { debounce } from 'common/js/util'
@@ -62,7 +62,8 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'city'
+      'city',
+      'poinWayList'
     ])
   },
   created() {
@@ -112,11 +113,36 @@ export default {
       } else if (flag === 'end') {
         this.saveEnd(this.pois)
       } else {
-        throw new Error('check your router ')
+        let poinway = {
+          id: +flag,
+          name: this.pois.name.trim(),
+          location: this.pois.location
+        }
+
+        let poinWayList = this.poiWayPush(poinway)
+        this.setPoinWay(poinWayList)
       }
 
-      this.$refs.map.destory()
       this.$router.back()
+    },
+     poiWayPush(item) {
+      let way = JSON.parse(JSON.stringify(this.poinWayList))
+
+      let id = item.id
+      let index = this.poinWayList.findIndex(item => item.id === id)
+
+      if (index > -1) {
+        way = this.poiWayRemove(index)
+      }
+
+      way.push(item)
+      return way
+    },
+    poiWayRemove(index) {
+      let way = JSON.parse(JSON.stringify(this.poinWayList))
+      way.splice(index, 1)
+
+      return way
     },
     selection(item) {
       this.selected = true
@@ -145,7 +171,10 @@ export default {
     ...mapActions([
       'saveStart',
       'saveEnd'
-    ])
+    ]),
+    ...mapMutations({
+      setPoinWay: 'SET_POINWAY'
+    }),
   },
   components: {
     AppMap,
