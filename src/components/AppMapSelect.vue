@@ -76,6 +76,7 @@ export default {
   },
   methods: {
     cancel() {
+      this.$refs.map.destory()
       this.$router.back()
     },
     focus() {
@@ -114,6 +115,7 @@ export default {
         throw new Error('check your router ')
       }
 
+      this.$refs.map.destory()
       this.$router.back()
     },
     selection(item) {

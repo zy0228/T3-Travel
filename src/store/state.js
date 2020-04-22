@@ -7,7 +7,9 @@ const state = {
   endPois: loadEP(),
   home: loadHome(),
   company: loadCompany(),
-  history: loadHistory()
+  history: loadHistory(),
+  price: 0,
+  poinWayList: []
 }
 
 export default state

@@ -15,6 +15,7 @@
             <input
               v-model="item.value"
               type="text"
+              @focus="focusHandler(item.id)"
               :placeholder="item.placeholder"
               ref="wayInput"
             >
@@ -65,6 +66,9 @@ export default {
       }
 
       this.$emit('delete-way', +index)
+    },
+    focusHandler(id) {
+      this.$emit('focus-list', id)
     },
     touchStart(e) {
       let touchEvent = e.touches[0]

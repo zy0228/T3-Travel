@@ -158,89 +158,167 @@ export function searchPlace({ keyword, city, pageSize, pageIndex }) {
 }
 
 export function dirving(map, origin, destination, opt = {}, name) {
-  AMap.plugin('AMap.Driving', function() {
-    var driving = new AMap.Driving({
-      policy: AMap.DrivingPolicy.LEAST_TIME,
-      ferry: 1,
-      map: map,
-      autoFitView: true
-    })
-    
-    driving.search(origin, destination, opt, function(status, result) {
-      if (status === 'complete') {
-        if (result.routes && result.routes.length) {
-          let startLoction = result.start.location
-          let endLocation = result.end.location
-          console.log(result)
-          drawRoute(result.routes[0])
-          setMarker([startLoction.lng, startLoction.lat], [endLocation.lng, endLocation.lat])
-        }
-      }
-    })
+  let thePrice = ''
 
-    function setMarker(start, end) {
-      let startPoi = creatPointMarker(start, {x: 4, y: -10})
-      let endPoi = creatPointMarker(end, {x: 4, y: -10})
-
-      startPoi.setMap(map)
-      endPoi.setMap(map)
-
-      startPoi.setLabel({
-        // offset: new AMap.Pixel(0 , 0),  //设置文本标注偏移量
-        content: `<div class='custom-info'>${name.start}</div>`
+  return new Promise((resolve, reject) => {
+    AMap.plugin('AMap.Driving', function() {
+      var driving = new AMap.Driving({
+        policy: AMap.DrivingPolicy.LEAST_TIME,
+        ferry: 1,
+        map: map,
+        autoFitView: true,
+        hideMarkers: true
       })
-
-      endPoi.setLabel({
-        // offset: new AMap.Pixel(0 , 0),  //设置文本标注偏移量
-        content: `<div class='custom-info'>${name.end}</div>`
-      })
-    }
-
-    function drawRoute (route) {
-        var path = parseRouteToPath(route)
-
-        var startMarker = new AMap.Marker({
-            position: path[0],
-            icon: 'https://webapi.amap.com/theme/v1.3/markers/n/start.png',
-            map: map
-        })
- 
-        var endMarker = new AMap.Marker({
-            position: path[path.length - 1],
-            icon: 'https://webapi.amap.com/theme/v1.3/markers/n/end.png',
-            map: map
-        })
-
-        var routeLine = new AMap.Polyline({
-            path: path,
-            isOutline: true,
-            outlineColor: '#5FBC3A',
-            borderWeight: 2,
-            strokeWeight: 5,
-            strokeColor: '#5FBC3A',
-            lineJoin: 'round',
-            zIndex: 100
-        })
-
-        routeLine.setMap(map)
-
-        // 调整视野达到最佳显示区域
-        map.setFitView([ startMarker, endMarker, routeLine ])
-    }
-
-    // helper
-    function parseRouteToPath(route) {
-        var path = []
-
-        for (var i = 0, l = route.steps.length; i < l; i++) {
-            var step = route.steps[i]
-
-            for (var j = 0, n = step.path.length; j < n; j++) {
-              path.push(step.path[j])
-            }
+      
+      driving.search(origin, destination, opt, function(status, result) {
+        if (status === 'complete') {
+          if (result.routes && result.routes.length) {
+            let startLoction = result.start.location
+            let endLocation = result.end.location
+            console.log(result)
+            drawRoute(result.routes[0])
+            setMarker([startLoction.lng, startLoction.lat], [endLocation.lng, endLocation.lat])
+            setTextMarker([startLoction.lng, startLoction.lat], [endLocation.lng, endLocation.lat], result)
+            resolve(thePrice)
+          }
         }
-
-        return path
-    }
+      })
+    })
   })
+
+  // hepler  =======================================================================
+  function setTextMarker(start, end, result) {
+    // createPositionText
+    let routes = result.routes[0]
+    let totoalTime = routes.time
+    let distance = (routes.distance / 1000).toFixed(1)
+    let date = new Date()
+    let min = date.getMinutes()
+    let startPoi = creatPointMarker(start, {x: -45, y: -75})
+    let endPoi = creatPointMarker(end, {x: -65, y: -90})
+    let unit = ''
+    let startTime = 5
+    let endtime = 0
+
+    if (totoalTime < 60) {
+      unit = '秒'
+    } else {
+      totoalTime = ~~(totoalTime / 60)
+
+      unit = '分钟'
+    }
+
+    if (distance < 1) {
+      // 起步价
+      thePrice = mapConfig.startPrice
+    } else {
+      thePrice = (distance - 1) * mapConfig.price + mapConfig.startPrice
+    }
+
+    date.setMinutes(min + totoalTime)
+    endtime = `${date.getHours()}:${date.getMinutes()}`
+
+    startPoi.setMap(map)
+    endPoi.setMap(map)
+
+    let startDom = `
+      <div class="custom-start-text">
+        <span class="text-o">${startTime}分钟后</span><span>上车</span> 
+      </div>`
+
+    let endDom = `
+      <div class="custom-end-text">
+        <div class="expect-time">
+          <span>预计</span>
+          <span class="text-o">${endtime}</span>
+          <span>到达</span>
+        </div>
+        <div class="driving-info">
+          <span>全程</span>
+          <span class="distance text-o">${distance}</span>
+          <span>公里,</span>
+          <span class="text-o">${totoalTime}</span>
+          <span>${unit}</span>
+        </div>
+      </div>
+    `
+
+    startPoi.setLabel({
+      // offset: new AMap.Pixel(0 , 0),  //设置文本标注偏移量
+      content: startDom
+    })
+
+    endPoi.setLabel({
+      // offset: new AMap.Pixel(0 , 0),  //设置文本标注偏移量
+      content: endDom
+    })
+  }
+
+  function setMarker(start, end) {
+    let startPoi = creatPointMarker(start, {x: 4, y: -10})
+    let endPoi = creatPointMarker(end, {x: 4, y: -10})
+
+    startPoi.setMap(map)
+    endPoi.setMap(map)
+
+    startPoi.setLabel({
+      // offset: new AMap.Pixel(0 , 0),  //设置文本标注偏移量
+      content: `<div class='custom-info'>${name.start}</div>`
+    })
+
+    endPoi.setLabel({
+      // offset: new AMap.Pixel(0 , 0),  //设置文本标注偏移量
+      content: `<div class='custom-info'>${name.end}</div>`
+    })
+  }
+
+  function drawRoute (route) {
+      var path = parseRouteToPath(route)
+      let startDom = document.createElement('div')
+      let endDom = document.createElement('div')
+      startDom.className = 'custom-startMarker-wrapper'
+      endDom.className = 'custom-endMarkder-wrapper'
+
+      var startMarker = new AMap.Marker({
+          position: path[0],
+          content: startDom,
+          map: map
+      })
+
+      var endMarker = new AMap.Marker({
+          position: path[path.length - 1],
+          content: endDom,
+          map: map
+      })
+
+      var routeLine = new AMap.Polyline({
+          path: path,
+          isOutline: true,
+          outlineColor: '#5FBC3A',
+          borderWeight: 2,
+          strokeWeight: 5,
+          strokeColor: '#5FBC3A',
+          lineJoin: 'round',
+          zIndex: 100
+      })
+
+      routeLine.setMap(map)
+
+      // 调整视野达到最佳显示区域
+      map.setFitView([ startMarker, endMarker, routeLine ])
+  }
+  // helper
+  function parseRouteToPath(route) {
+    var path = []
+
+    for (var i = 0, l = route.steps.length; i < l; i++) {
+        var step = route.steps[i]
+
+        for (var j = 0, n = step.path.length; j < n; j++) {
+          path.push(step.path[j])
+        }
+    }
+
+    return path
+  }
 }

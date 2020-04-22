@@ -21,6 +21,12 @@ const mutations = {
   },
   [types.SET_COMPANY] (state, company) {
     state.company = company
+  },
+  [types.SET_PRICE] (state, price) {
+    state.price = price
+  },
+  [types.SET_POINWAY] (state, poinway) {
+    state.poinWayList = poinway
   }
 }
 

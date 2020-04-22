@@ -30,12 +30,12 @@ export default new Router({
         {
           path: ':flag?/mapselect',
           component: AppMapSelect
-        },
-        {
-          path: 'driving',
-          component: Driving
         }
       ]
+    },
+    {
+      path: '/driving',
+      component: Driving
     }
   ]
 })

@@ -1,6 +1,6 @@
 <template>
   <div class="map-container">
-    <div id='container' class="map"></div>
+    <div id='container' ref="map" class="map"></div>
   </div>
 </template>
 
@@ -95,13 +95,24 @@ export default {
     }
   },
   mounted () {
-    this.mpInital()
+    if (!this.geolocation) {
+      this.setBottom()
+    }
+    setTimeout(() => {
+      this.mpInital()
+    }, 200)
   },
   methods: {
+    setBottom() {
+      this.$refs.map.style.bottom = '285px'
+    },
     mpInital () {
       mapLoader().then(AMap => {
         if (AMap === null) return
 
+        this.map && this.map.destory()
+
+        // initmap====================================================================
         const map = new AMap.Map('container', {
           resizeEnable: this.resizeEnable,
           zoom: this.zoom,
@@ -109,6 +120,12 @@ export default {
         })
 
         this.map = map
+
+        map.on('complete', () => {
+          this.$nextTick(() => {
+            this.$emit('initalMap')
+          })
+        })
 
         // 是否需要定位功能
         if (!this.geolocation) {
@@ -191,7 +208,11 @@ export default {
      * cb 回调函数
     */
     initalDirv(...arg) {
-      dirving(this.map, ...arg)
+      dirving(this.map, ...arg).then(res => {
+        if (res) {
+          this.setPrice(+res)
+        }
+      })
     },
     // 查询附近的标志性建筑
     fuzzySearch (...arg) {
@@ -291,8 +312,12 @@ export default {
       this.drag.inital = false
       this.$emit('drag-end')
     },
+    destory() {
+      this.map && this.map.destroy()
+    },
     ...mapMutations({
-      setCity: 'SET_CITY'
+      setCity: 'SET_CITY',
+      setPrice: 'SET_PRICE'
     }),
     ...mapActions([
       'setCenterPosition'
@@ -309,8 +334,6 @@ export default {
     left 0
     right 0
     bottom 0
-    width 100%
-    height 100%
 /deep/ .custom-location
   width 32px
   height 32px
