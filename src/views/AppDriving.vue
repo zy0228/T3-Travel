@@ -45,12 +45,12 @@
         </div>
       </div>
       <div class="operate">
-        <div class="takePeople">
+        <div class="takePeople" @click="addTakePeople">
           <span>选乘坐人</span>
           <span class="icon-navigate_nextchevron_right"></span>
         </div>
-        <div class="waypoint">
-          <span>添加途径点</span>
+        <div class="waypoint" @click="addPoinWay">
+          <span>{{getPoinWayList ? getPoinWayList + '个途经点' : '添加途径点'}}</span>
           <span class="icon-navigate_nextchevron_right"></span>
         </div>
       </div>
@@ -58,12 +58,15 @@
         <span>呼叫快享</span>
       </div>
     </div>
+    <transition name="side">
+      <router-view></router-view>
+    </transition>
   </div>
 </template>
 
 <script>
 import AppMap from 'components/AppMap'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapMutations } from 'vuex'
 
 export default {
   data () {
@@ -80,7 +83,10 @@ export default {
       'endPois',
       'price',
       'poinWayList'
-    ])
+    ]),
+    getPoinWayList() {
+      return this.poinWayList.length
+    }
   },
   methods: {
     initalMap () {
@@ -106,13 +112,24 @@ export default {
       this.$refs.map.initalDirv(startP, endP, opt, name)
     },
     callback (status, result) {
-      console.log('giaogiaogiao', status, result)
     },
     back () {
       this.$router.push({
         path: '/'
       })
-    }
+    },
+    addPoinWay() {
+      this.setAddPoinWay(true)
+      this.$router.back()
+    },
+    addTakePeople() {
+      this.$router.push({
+        path: '/driving/takePeople'
+      })
+    },
+    ...mapMutations({
+      setAddPoinWay: 'SET_ADD_POINWAY'
+    })
   },
   filters: {
     tofixed (val) {
@@ -245,7 +262,10 @@ export default {
       font-size 16px
       font-weight 600
       margin-bottom 30px
-
+  .side-enter-active, .side-leave-active
+    transition all .3s
+  .side-enter, .side-leave-to
+    transform translate3d(100%, 0, 0)
 /deep/ .amap-logo
   display none!important
 /deep/ .custom-startMarker-wrapper

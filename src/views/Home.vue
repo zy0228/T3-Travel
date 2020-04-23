@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapMutations } from 'vuex'
 import AppMap from 'components/AppMap'
 import TheHeader from 'components/TheHeader'
 import TabBar from 'components/TheTabBar'
@@ -46,6 +46,10 @@ export default {
       locationend: false,
       isNeedSetCenter: true
     }
+  },
+  created() {
+    this.setAddPoinWay(false)
+    this.setPoinWay([])
   },
   mounted() {
     this.setLocation(SING_LOCATION.START, '正在获取上车位置...')
@@ -82,6 +86,10 @@ export default {
         query: { start }
       })
     },
+    ...mapMutations({
+      setAddPoinWay: 'SET_ADD_POINWAY',
+      setPoinWay: 'SET_POINWAY'
+    }),
     ...mapActions([
       'saveStart'
     ])

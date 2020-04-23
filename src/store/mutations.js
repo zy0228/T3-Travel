@@ -27,6 +27,9 @@ const mutations = {
   },
   [types.SET_POINWAY] (state, poinway) {
     state.poinWayList = poinway
+  },
+  [types.SET_ADD_POINWAY] (state, poinway) {
+    state.addPoinWay = poinway
   }
 }
 

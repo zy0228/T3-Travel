@@ -159,7 +159,6 @@ export function searchPlace ({ keyword, city, pageSize, pageIndex }) {
 }
 
 export function dirving (map, origin, destination, opt, name) {
-  console.log(opt)
   let poiWay = {}
   let thePrice = ''
   let poinList = []

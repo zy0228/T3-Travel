@@ -5,7 +5,8 @@ const Search = () => import('./views/SelectSearch')
 const Favorite = () => import('./components/AppFavorites')
 const Appsearch = () => import('./components/AppSearch')
 const AppMapSelect = () => import('./components/AppMapSelect')
-const Driving = () => import('./components/AppDriving.vue')
+const Driving = () => import('./views/AppDriving')
+const TakePeople = () => import('./views/TakePeople.vue')
 
 Vue.use(Router)
 
@@ -35,7 +36,13 @@ export default new Router({
     },
     {
       path: '/driving',
-      component: Driving
+      component: Driving,
+      children: [
+        {
+          path: 'takePeople',
+          component: TakePeople
+        }
+      ]
     }
   ]
 })

@@ -128,7 +128,8 @@ export default {
       'searchHistory',
       'startPois',
       'endPois',
-      'poinWayList'
+      'poinWayList',
+      'AddPoinWay'
     ]),
     isShowAdd () {
       return this.poinWay.length < 3
@@ -161,6 +162,27 @@ export default {
       this.delayShow = true
       this.receive()
     }, (150))
+  },
+  mounted() {
+    setTimeout(() => {
+      if (this.AddPoinWay) {
+        this.$refs.searchBox.setStartLocation(this.startPois.name)
+        this.$refs.searchBox.setEndLoaction(this.endPois.name)
+
+        if (this.poinWayList.length > 0) {
+          this.poinWayList.forEach((item, index) => {
+            this.addWay()
+            this.$set(this.poinWay[index], 'value', item.name)
+          })
+
+          this.addWay()
+        } else {
+          this.addWay()
+        }
+
+        this.setAddPoinWay(false)
+      }
+    }, 500)
   },
   beforeRouteUpdate (to, from, next) {
     let { path, params } = from
@@ -235,7 +257,6 @@ export default {
 
       if (delIndex !== -1) {
         this.poinWay.splice(delIndex, 1)
-        // this.setPoinWay(this.poiWayRemove(delIndex))
       }
 
       if (i > -1) {
@@ -258,25 +279,12 @@ export default {
         return
       }
 
-      // let name = this.startPois.name || ''
-      // if (queryFormat === name) {
-      //   this.query = ''
-      //   this.query1 = queryFormat
-      //   return
-      // }
-
       this.query = queryFormat
       this.query1 = queryFormat
       this.queryIsEnd = false
     },
     endQuery (query) {
       let queryFormat = query.trim()
-      // let name = this.endPois.name || ''
-      // if (queryFormat === name) {
-      //   this.query = ''
-      //   this.query2 = queryFormat
-      //   return
-      // }
 
       this.query = queryFormat
       this.query2 = queryFormat
@@ -460,7 +468,8 @@ export default {
     },
     ...mapMutations({
       setCity: 'SET_CITY',
-      setPoinWay: 'SET_POINWAY'
+      setPoinWay: 'SET_POINWAY',
+      setAddPoinWay: 'SET_ADD_POINWAY'
     }),
     ...mapActions([
       'saveSearch',

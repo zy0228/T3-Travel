@@ -9,7 +9,8 @@ const state = {
   company: loadCompany(),
   history: loadHistory(),
   price: 0,
-  poinWayList: []
+  poinWayList: [],
+  addPoinWay: false
 }
 
 export default state
