@@ -105,7 +105,7 @@ export function addDragEvent (map, dragStart, draging, dragEnd = () => {}) {
  * @param {class AMap} map
  * @param {object} config
  */
-export function createPositionText (config) {
+export function createPositionText (config, animation = true) {
   let style = {
     position: 'absolute',
     padding: '10px',
@@ -119,7 +119,7 @@ export function createPositionText (config) {
     text: '默认文字',
     anchor: 'center',
     draggable: false,
-    animation: 'AMAP_ANIMATION_DROP'
+    animation: animation ? 'AMAP_ANIMATION_DROP' : 'AMAP_ANIMATION_NONE'
   }, config, { style }))
 }
 
@@ -307,7 +307,7 @@ export function dirving (map, origin, destination, opt, name) {
     var path = parseRouteToPath(route)
     let startDom = document.createElement('div')
     let endDom = document.createElement('div')
-    startDom.className = 'custom-startMarker-wrapper'
+    startDom.className = 'driv-custom-startMarker-wrapper'
     endDom.className = 'custom-endMarkder-wrapper'
 
     var startMarker = new AMap.Marker({

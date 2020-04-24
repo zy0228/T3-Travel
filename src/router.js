@@ -7,6 +7,7 @@ const Appsearch = () => import('./components/AppSearch')
 const AppMapSelect = () => import('./components/AppMapSelect')
 const Driving = () => import('./views/AppDriving')
 const TakePeople = () => import('./views/TakePeople.vue')
+const CancelOrder = () => import('./views/CancelSuccess.vue')
 
 Vue.use(Router)
 
@@ -41,6 +42,10 @@ export default new Router({
         {
           path: 'takePeople',
           component: TakePeople
+        },
+        {
+          path: 'cancel',
+          component: CancelOrder
         }
       ]
     }

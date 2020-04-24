@@ -81,12 +81,14 @@ export default {
       point: null,
       positionText: null,
       positionPicker: null,
-      dirv: null
+      dirv: null,
+      time: 120
     }
   },
   computed: {
     ...mapGetters([
-      'centerPosition'
+      'centerPosition',
+      'startPois'
     ])
   },
   created () {
@@ -103,8 +105,8 @@ export default {
     }, 200)
   },
   methods: {
-    setBottom () {
-      this.$refs.map.style.bottom = '285px'
+    setBottom (pix) {
+      this.$refs.map.style.bottom = pix ? pix : '285px'
     },
     mpInital () {
       mapLoader().then(AMap => {
@@ -290,6 +292,87 @@ export default {
         throw new Error('拖动落地定位失败')
       }
     },
+    createGlintPoint() {
+      let { lng, lat } = this.startPois.location
+      let position = [lng, lat]
+      // 清除所有覆盖物
+      this.map && this.map.clearMap()
+
+      // 添加光点
+      let g1 = this.createTextObject(30, 1, '#F3DAC5', 'blings-1', position)
+      let g2 = this.createTextObject(120, 0.8, '#F5E8E3', 'blings-2', position)
+      let g3 = this.createTextObject(240, 0.4, '#F6F1E3', 'blings-3', position)
+
+      let text = {
+        text: '等待120s',
+        style: {
+          'border': 'none',
+          'top': '-64px',
+          // 'right': '-102px',
+          'font-size': '14px'
+        },
+        position: [lng, lat]
+      }
+
+      text = createPositionText(text)
+
+      g1 = createPositionText(g1, false)
+      g2 = createPositionText(g2, false)
+      g3 = createPositionText(g3, false)
+
+      g1.setMap(this.map)
+      g2.setMap(this.map)
+      g3.setMap(this.map)
+
+      text.setMap(this.map)
+
+      this.map.setCenter(position)
+      this.timerHanlder(text)
+    },
+    timerHanlder(textMarker) {
+      this.timer = setInterval(() => {
+        let text = `等待${--this.time}s`
+        textMarker.setText(text)
+      }, 1000)
+    },
+    removeText() {
+      this.map && this.map.clearMap()
+
+      let { lng, lat } = this.startPois.location
+      let position = [lng, lat]
+
+      if (this.timer) {
+        clearInterval(this.timer)
+        this.time = 120
+      }
+
+      let startMarkerDom = document.createElement('div')
+      startMarkerDom.className = 'custom-startMarker-wrapper'
+
+      let startMarker = new AMap.Marker({
+        position,
+        content: startMarkerDom
+        // offset: new AMap.Pixel(-13, -30)
+      })
+
+      this.map.add(startMarker)
+    },
+    createTextObject(pix, opacity, color, animationName, position) {
+      return {
+        text: ' ',
+        verticalAlign: 'middle',
+        style: {
+          'border': 'none',
+          'width': `${pix}px`,
+          'height': `${pix}px`,
+          'border-radius': '100%',
+          'background-color': `${color}`,
+          'opacity': `${opacity}`,
+          'animation': `${animationName} 2s linear infinite`,
+          'box-shadow': 'none'
+        }, position
+      }
+    },
     onPickerErr (positionResult) {
       throw new Error('拖动定位失败')
     },
@@ -320,6 +403,13 @@ export default {
     ...mapActions([
       'setCenterPosition'
     ])
+  },
+  watch: {
+    time(newTime) {
+      if (+newTime === 0) {
+        this.time = 120
+      }
+    }
   }
 }
 </script>

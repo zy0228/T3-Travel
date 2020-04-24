@@ -12,7 +12,7 @@
       @initalMap="initalMap"
     >
     </app-map>
-    <div class="driving-wrapper">
+    <div class="driving-wrapper" v-show="notStarting">
       <div class="settle" v-show="price">
         <p>快享</p>
         <img width="64" height="60" src="../common/images/car.png" alt="">
@@ -54,10 +54,58 @@
           <span class="icon-navigate_nextchevron_right"></span>
         </div>
       </div>
-      <div class="call">
-        <span>呼叫快享</span>
+      <div class="call" v-show="price">
+        <span @click="callFastEnjoy">呼叫快享</span>
       </div>
     </div>
+    <div class="calling" v-show="starting">
+      <div class="des-text">
+        <span>正在为您寻找周围车辆，请耐心等待</span>
+      </div>
+      <div class="bottom">
+        <span class="icon-clearclose"></span>
+        <span @click="cancel">取消订单</span>
+      </div>
+    </div>
+    <div class="driver-info" v-show="awating">
+      <div class="driver-content">
+        <div class="car-info">
+          <div class="car-number">
+            <span>苏AD4733</span>
+          </div>
+          <div class="car-des">
+            <span>白色-异动BEV</span>
+          </div>
+          <div class="driver-rating">
+            <span class="name">严师傅</span>
+            <span class="rating">4.9</span>
+            <span class="order-number">3480单</span>
+          </div>
+        </div>
+        <div class="operate">
+          <div class="tel"></div>
+          <div class="message"></div>
+          <div class="resume"></div>
+        </div>
+      </div>
+      <div class="driver-bottom">
+        <div class="alarm">
+          <span>一键报警</span>
+        </div>
+        <div class="cancel-order" @click="cancel">
+          <span class="icon-clearclose"></span>
+          <span>取消订单</span>
+        </div>
+      </div>
+    </div>
+    <confirm
+      ref="confirm"
+      text="再等等，正在快速排单中~"
+      :confirmBtnText="confirmBtnText"
+      :cancelBtnText="cancelBtnText"
+      @confirm="confirm"
+    >
+    </confirm>
     <transition name="side">
       <router-view></router-view>
     </transition>
@@ -67,6 +115,8 @@
 <script>
 import AppMap from 'components/AppMap'
 import { mapGetters, mapMutations } from 'vuex'
+import { currentProcess } from 'common/js/config'
+import Confirm from 'components/BaseConfirm'
 
 export default {
   data () {
@@ -74,7 +124,9 @@ export default {
       offsetY: 300,
       showCircle: false,
       geolocation: false,
-      expectPrice: 6.3
+      expectPrice: 6.3,
+      confirmBtnText: '不等了',
+      cancelBtnText: '再等等'
     }
   },
   computed: {
@@ -82,10 +134,20 @@ export default {
       'startPois',
       'endPois',
       'price',
-      'poinWayList'
+      'poinWayList',
+      'callCar'
     ]),
     getPoinWayList() {
       return this.poinWayList.length
+    },
+    notStarting() {
+      return this.callCar === currentProcess.notCall
+    },
+    starting() {
+      return this.callCar === currentProcess.calling
+    },
+    awating() {
+      return this.callCar === currentProcess.awaitDriver
     }
   },
   methods: {
@@ -127,8 +189,30 @@ export default {
         path: '/driving/takePeople'
       })
     },
+    callFastEnjoy() {
+      this.$refs.map.setBottom('132px')
+      this.setCallCar(currentProcess.calling)
+      // TODO: 给地图添加闪烁光点
+      this.$refs.map.createGlintPoint()
+
+      // TODO: 模拟派单成功
+      setTimeout(() => {
+        this.setCallCar(currentProcess.awaitDriver)
+        this.$refs.map.removeText()
+      }, 6000)
+    },
+    confirm() {
+      // TODO:cancel order
+      this.$router.push({
+        path: '/driving/cancel'
+      })
+    },
+    cancel() {
+      this.$refs.confirm.show()
+    },
     ...mapMutations({
-      setAddPoinWay: 'SET_ADD_POINWAY'
+      setAddPoinWay: 'SET_ADD_POINWAY',
+      setCallCar: 'SET_CALL_CAR'
     })
   },
   filters: {
@@ -139,7 +223,8 @@ export default {
     }
   },
   components: {
-    AppMap
+    AppMap,
+    Confirm
   }
 }
 </script>
@@ -250,7 +335,6 @@ export default {
         padding 10px
         .icon-navigate_nextchevron_right
           vertical-align: middle
-
     .call
       margin 6px
       height 44px
@@ -262,18 +346,111 @@ export default {
       font-size 16px
       font-weight 600
       margin-bottom 30px
+  .calling
+    position fixed
+    bottom 0
+    left 0
+    right 0
+    text-align center
+    border-top-left-radius 8px
+    border-top-right-radius 8px
+    background $color-background
+    .des-text
+      height 60px
+      text-align center
+      line-height 60px
+      border-top-left-radius 6px
+      border-top-right-radius 6px
+      border-bottom 1px solid #666666
+    .bottom
+      padding 20px 0 40px 0
+      color #787878
+      font-size 14px
+      .icon-clearclose
+        color #666666
+  .driver-info
+    position fixed
+    bottom 0
+    left 0
+    right 0
+    border-top-left-radius 8px
+    border-top-right-radius 8px
+    background $color-background
+    .driver-content
+      padding 14px 10px
+      box-shadow 0 2px 5px rgba(0, 0, 0, 0.1)
+      display flex
+      .car-info
+        flex 1
+        .car-number
+          color #111111
+          font-size 24px
+          font-weight 600
+          letter-spacing 2px
+        .car-des
+          margin-top 13px
+          font-size 14px
+          font-weight 600
+          color #111111
+        .driver-rating
+          margin-top 13px
+          color #7e7e7e
+          font-size 12px
+          span
+            text-indent 2px
+      .operate
+        flex 1
+        height 74px
+        display flex
+        margin-left 80px
+        margin-right 10px
+        justify-content space-between
+        align-items center
+        .tel
+          width 20px
+          height 20px
+          background #666666
+          border-radius 50%
+        .message
+          width 20px
+          height 20px
+          background #666666
+          border-radius 50%
+        .resume
+          width 40px
+          height 40px
+          background #666666
+          border-radius 50%
+    .driver-bottom
+      height 80px
+      display flex
+      align-items center
+      font-size 12px
+      color #666666
+      .alarm
+        flex 1
+        text-align center
+      .cancel-order
+        flex 1
+        text-align center
   .side-enter-active, .side-leave-active
     transition all .3s
   .side-enter, .side-leave-to
     transform translate3d(100%, 0, 0)
 /deep/ .amap-logo
   display none!important
-/deep/ .custom-startMarker-wrapper
+/deep/ .driv-custom-startMarker-wrapper
   position relative
   width 26px
   height 40px
   background-image url('../common/images/startP.png')
   background-size contain
+/deep/ .custom-startMarker-wrapper
+  position relative
+  width 44px
+  height 44px
+  background-image url('../common/images/start.png')
+  background-size 44px 44px
 /deep/.custom-endMarkder-wrapper
   position relative
   width 26px

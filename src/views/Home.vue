@@ -32,7 +32,7 @@ import AppMap from 'components/AppMap'
 import TheHeader from 'components/TheHeader'
 import TabBar from 'components/TheTabBar'
 import SearchBox from 'components/AppSearchBox'
-import { SING_LOCATION } from 'common/js/config'
+import { SING_LOCATION, currentProcess } from 'common/js/config'
 import Pois from 'common/js/poi'
 
 export default {
@@ -50,6 +50,7 @@ export default {
   created() {
     this.setAddPoinWay(false)
     this.setPoinWay([])
+    this.setCallCar(currentProcess.notCall)
   },
   mounted() {
     this.setLocation(SING_LOCATION.START, '正在获取上车位置...')
@@ -88,7 +89,8 @@ export default {
     },
     ...mapMutations({
       setAddPoinWay: 'SET_ADD_POINWAY',
-      setPoinWay: 'SET_POINWAY'
+      setPoinWay: 'SET_POINWAY',
+      setCallCar: 'SET_CALL_CAR'
     }),
     ...mapActions([
       'saveStart'

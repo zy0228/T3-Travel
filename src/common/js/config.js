@@ -13,4 +13,12 @@ export const SING_LOCATION = {
   END: 1
 }
 
+// 代表当前的打车状态
+export const currentProcess = {
+  notCall: 'NOCALL', // 未叫车
+  calling: 'CALLING', // 等待中
+  awaitDriver: 'AWAIT_DRIVER', // 等待司机到达
+  driverArrive: 'DRIVER_ARRIVE', // 司机已到达
+}
+
 export default mapConfig

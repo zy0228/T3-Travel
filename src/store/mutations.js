@@ -30,6 +30,9 @@ const mutations = {
   },
   [types.SET_ADD_POINWAY] (state, poinway) {
     state.addPoinWay = poinway
+  },
+  [types.SET_CALL_CAR] (state, callcar) {
+    state.callCar = callcar
   }
 }
 

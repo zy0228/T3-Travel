@@ -6,6 +6,9 @@ function resolve (dir) {
 
 module.exports = {
   lintOnSave: false,
+  devServer: {
+    disableHostCheck: true
+  },
   chainWebpack: config => {
     config.resolve.alias
       .set('common', resolve('src/common'))
