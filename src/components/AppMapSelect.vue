@@ -6,7 +6,7 @@
       </div>
       <input ref="searchBox" @focus="focus" type="text" v-model="location" :placeholder="placeholder">
       <span class="icon-clearclose" v-show="isFocus && location" @click="clear"></span>
-      <div class="cancel" @click="cancel">
+      <div class="cancel" @click.stop="cancel">
         <span>取消</span>
       </div>
     </header>

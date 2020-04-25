@@ -28,11 +28,14 @@ export default {
 @import '~common/stylus/variable'
 
 .header
-  position relative
+  position fixed
   display flex
   overflow hidden
   padding 10px 0
   z-index 999
+  top 0
+  left 10px
+  right 10px
   .citySelect
     flex 1
     text-align center

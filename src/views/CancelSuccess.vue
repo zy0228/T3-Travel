@@ -24,7 +24,7 @@
         <textarea placeholder="如有其他取消原因，请在这里告知我们" />
       </div>
     </div>
-    <div class="confirm">
+    <div class="confirm" @click="back">
       <span>提交原因</span>
     </div>
   </div>

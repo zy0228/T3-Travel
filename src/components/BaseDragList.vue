@@ -21,8 +21,8 @@
             >
             <span
               class="icon-menu"
-              @touchstart="touchStart"
-              @touchmove="touchMove"
+              @touchstart.prevent.stop="touchStart"
+              @touchmove.prevent.stop="touchMove"
               @touchend="touchEnd"
             ></span>
           </div>
@@ -87,6 +87,11 @@ export default {
       }
     },
     touchMove(e) {
+      
+      this.$refs.wayInput.forEach(item => {
+        item.blur()
+      })
+
       if (!this.touches.length) return
       if (!this.targetItem) return
 

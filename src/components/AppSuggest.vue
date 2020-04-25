@@ -83,7 +83,6 @@ export default {
       searchPlace(options).then(res => {
         if (res.info === 'OK') {
           let {pois, count} = res.poiList
-          console.log(res)
 
           // none result
           if (!count) {

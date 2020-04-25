@@ -12,7 +12,8 @@ const state = {
   price: 0,
   poinWayList: [],
   addPoinWay: false,
-  callCar: currentProcess.notCall
+  callCar: currentProcess.notCall,
+  resvernation: null
 }
 
 export default state

@@ -15,20 +15,40 @@
     <div class="search-wrapper">
       <search-box ref="searchBox" @on-start="entery('start')" @on-end="entery('end')">
         <template #operate>
-          <div class="reservation">
-            <span class="icon-clock2"></span>
-            <span class="text">预约</span>
+          <div class="reservation" @click="reservation" :class="{'reservationed' : resvernation}">
+            <span class="icon-clock2" v-show="!resvernation"></span>
+            <span class="text">{{text}}</span>
           </div>
         </template>
       </search-box>
     </div>
     <tab-bar></tab-bar>
     <Side :bottom="bottom"></Side>
+    <Reservation ref="Reservation" @select="select"></Reservation>
+    <transition name="cancel-fade">
+      <div class="cancel-resvervation" v-show="isCancelRv">
+        <transition name="fade">
+          <div class="content" v-show="isCancelRv">
+            <div class="implement">
+              <div class="cancel-res" @click="cancelRes">
+                <span>取消预约</span>
+              </div>
+              <div class="changetime" @click="changeRes">
+                <span>更改预约时间</span>
+              </div>
+            </div>
+            <div class="cancel" @click="cancel">
+              <span>取消</span>
+            </div>
+          </div>
+        </transition>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
-import { mapActions, mapMutations } from 'vuex'
+import { mapGetters, mapActions, mapMutations } from 'vuex'
 import AppMap from 'components/AppMap'
 import TheHeader from 'components/TheHeader'
 import TabBar from 'components/TheTabBar'
@@ -36,6 +56,7 @@ import SearchBox from 'components/AppSearchBox'
 import { SING_LOCATION, currentProcess } from 'common/js/config'
 import Pois from 'common/js/poi'
 import Side from 'components/TheSide'
+import Reservation from 'components/MyReservation'
 
 export default {
   name: 'home',
@@ -47,13 +68,23 @@ export default {
       bottom: 224,
       location: '',
       locationend: false,
+      isCancelRv: false,
       isNeedSetCenter: true
+    }
+  },
+  computed: {
+    ...mapGetters([
+      'resvernation'
+    ]),
+    text() {
+      return this.resvernation !== null ? this.resvernation : '预约'
     }
   },
   created() {
     this.setAddPoinWay(false)
     this.setPoinWay([])
     this.setCallCar(currentProcess.notCall)
+    this.saveEnd({})
   },
   mounted() {
     this.setLocation(SING_LOCATION.START, '正在获取上车位置...')
@@ -90,13 +121,38 @@ export default {
         query: { start }
       })
     },
+    reservation() {
+      if (this.resvernation !== null) {
+        // TODO: 做弹窗
+        this.isCancelRv = true
+        return
+      }
+
+      this.$refs.Reservation.show()
+    },
+    select(time) {
+      this.setResvernavtion(time)
+    },
+    cancelRes() {
+      this.setResvernavtion(null)
+      this.isCancelRv = false
+    },
+    changeRes() {
+      this.isCancelRv = false
+      this.$refs.Reservation.show()
+    },
+    cancel() {
+      this.isCancelRv = false
+    },
     ...mapMutations({
       setAddPoinWay: 'SET_ADD_POINWAY',
       setPoinWay: 'SET_POINWAY',
-      setCallCar: 'SET_CALL_CAR'
+      setCallCar: 'SET_CALL_CAR',
+      setResvernavtion: 'SET_RESVERNATION'
     }),
     ...mapActions([
-      'saveStart'
+      'saveStart',
+      'saveEnd'
     ])
   },
   components: {
@@ -104,7 +160,8 @@ export default {
     TheHeader,
     TabBar,
     SearchBox,
-    Side
+    Side,
+    Reservation
   }
 }
 </script>
@@ -135,11 +192,58 @@ export default {
       font-size 12px
       color #CACACA
       box-shadow 0 0 0.5px rgba(0, 0, 0, 0.1)
+      &.reservationed
+        border 1px solid $color-text-o
+        color $color-text-o!important
+        .text
+          color $color-text-o!important
+      .icon-clock2
+        margin-right 5px
       .text
         color #111
-        margin-left 5px
         color #6D6D6D
         font-weight 600
+  .cancel-fade-enter, .cancel-fade-leave-active
+    opacity: 0
+  .cancel-fade-enter-active, .cancel-fade-leave-active
+    transition: all .3s ease-in-out
+  .cancel-resvervation
+    position fixed
+    top 0
+    bottom 0
+    left 0
+    right 0
+    z-index 999999
+    background-color $color-background-d
+    .fade-enter, .fade-leave-active
+      transform translate3d(0, 100%, 0)
+      opacity 0
+    .fade-enter-active, .fade-leave-active
+      transition all .3s ease-in-out
+    .content
+      position fixed
+      bottom 35px
+      left 10px
+      right 10px
+      .implement
+        background #FFFFFF
+        border-radius 4px
+        font-size 14px
+        font-weight 600
+        .cancel-res
+          text-align center
+          padding 15px 0
+          border-bottom 1px solid #F7F7F7
+        .changetime
+          text-align center
+          padding 15px 0
+      .cancel
+        background #FFFFFF
+        border-radius 4px
+        margin-top 10px
+        color $color-text-o
+        padding 15px 0
+        text-align center
 /deep/ .custom-startMarker-wrapper
   position relative
   width 44px

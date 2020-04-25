@@ -192,7 +192,6 @@ export function dirving (map, origin, destination, opt, name) {
             let startLoction = result.start.location
             let endLocation = result.end.location
             let waypoints = result.waypoints
-            console.log(result)
 
             if (waypoints.length > 0) {
               // add pointway marker and show name

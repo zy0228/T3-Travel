@@ -489,7 +489,6 @@ export default {
   },
   watch: {
     query (newVal) {
-      // console.log('query的值', newVal)
       if (!newVal) {
         this.$nextTick(() => {
           this.$refs.searchList.refresh()
@@ -569,7 +568,6 @@ export default {
     },
     isAlready: {
       handler (newv) {
-        console.log(newv)
 
         if (this.focusId === null && newv) {
           this.$nextTick(() => {

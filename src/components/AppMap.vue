@@ -223,7 +223,6 @@ export default {
       searchNearBy(...arg)
         .then(result => {
         // 返回最近的建筑
-          console.log('附近的建筑', result)
           if (result.info === RESULT_OK) {
             let { pois } = result.poiList
 
@@ -299,7 +298,7 @@ export default {
       this.map && this.map.clearMap()
 
       // 添加光点
-      let g1 = this.createTextObject(30, 1, '#F3DAC5', 'blings-1', position)
+      let g1 = this.createTextObject(30, 1, '#f9a55e', 'blings-1', position)
       let g2 = this.createTextObject(120, 0.9, '#F5E8E3', 'blings-2', position)
       let g3 = this.createTextObject(240, 0.5, '#F6F1E3', 'blings-3', position)
 
@@ -403,6 +402,9 @@ export default {
     ...mapActions([
       'setCenterPosition'
     ])
+  },
+  beforeDestroy() {
+    clearInterval(this.timer)
   },
   watch: {
     time(newTime) {

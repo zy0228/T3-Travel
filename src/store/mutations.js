@@ -33,6 +33,9 @@ const mutations = {
   },
   [types.SET_CALL_CAR] (state, callcar) {
     state.callCar = callcar
+  },
+  [types.SET_RESVERNATION] (state, resvernation) {
+    state.resvernation = resvernation
   }
 }
 

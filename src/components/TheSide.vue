@@ -48,6 +48,9 @@ export default {
       }, 2000)
     }
   },
+  beforeDestroy() {
+    clearInterval(this.timerText)
+  },
   watch: {
     length(newv) {
       if (newv === -1) {
@@ -60,7 +63,7 @@ export default {
 
 <style lang="stylus" scoped>
 .side
-  position absolute
+  position fixed
   left 10px
   display flex
   align-items center
