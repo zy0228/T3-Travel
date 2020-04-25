@@ -300,8 +300,8 @@ export default {
 
       // 添加光点
       let g1 = this.createTextObject(30, 1, '#F3DAC5', 'blings-1', position)
-      let g2 = this.createTextObject(120, 0.8, '#F5E8E3', 'blings-2', position)
-      let g3 = this.createTextObject(240, 0.4, '#F6F1E3', 'blings-3', position)
+      let g2 = this.createTextObject(120, 0.9, '#F5E8E3', 'blings-2', position)
+      let g3 = this.createTextObject(240, 0.5, '#F6F1E3', 'blings-3', position)
 
       let text = {
         text: '等待120s',

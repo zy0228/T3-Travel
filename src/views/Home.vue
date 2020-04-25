@@ -23,6 +23,7 @@
       </search-box>
     </div>
     <tab-bar></tab-bar>
+    <Side :bottom="bottom"></Side>
   </div>
 </template>
 
@@ -34,6 +35,7 @@ import TabBar from 'components/TheTabBar'
 import SearchBox from 'components/AppSearchBox'
 import { SING_LOCATION, currentProcess } from 'common/js/config'
 import Pois from 'common/js/poi'
+import Side from 'components/TheSide'
 
 export default {
   name: 'home',
@@ -42,6 +44,7 @@ export default {
       showCircle: false,
       geolocation: true,
       offsetY: 220,
+      bottom: 224,
       location: '',
       locationend: false,
       isNeedSetCenter: true
@@ -100,7 +103,8 @@ export default {
     AppMap,
     TheHeader,
     TabBar,
-    SearchBox
+    SearchBox,
+    Side
   }
 }
 </script>
