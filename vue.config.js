@@ -5,6 +5,7 @@ function resolve (dir) {
 }
 
 module.exports = {
+  publicPath: process.env.NODE_ENV === 'production' ? '/t3/' : '/',
   lintOnSave: false,
   devServer: {
     disableHostCheck: true
