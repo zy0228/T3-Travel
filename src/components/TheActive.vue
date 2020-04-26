@@ -112,8 +112,8 @@ export default {
     top 45%
     left 50%
     transform translate3d(-50%, -50%, 0)
-    width 70%
-    height 45%
+    width 84%
+    height 50%
     border-radius 8px
     .slide-banner-wrapper
       height 100%
@@ -136,7 +136,7 @@ export default {
           background-size contain
   .docs-wrapper
     position fixed
-    top 68%
+    top 70%
     left 50%
     transform translateX(-50%)
     .doc
@@ -152,7 +152,7 @@ export default {
         opacity 1
   .close
     position fixed
-    top 72%
+    top 73%
     left 50%
     border 1.5px solid #FFFFFF
     width 30px
