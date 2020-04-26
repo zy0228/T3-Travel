@@ -24,8 +24,13 @@ export function mapLoader () {
     }
     window.initMap = () => {
       // 这里调用initAMapUI初始化
-      initAMapUI()
-      resolve(window.AMap)
+      try {
+        initAMapUI()
+        resolve(window.AMap)
+      } catch(e) {
+        console.warn(e)
+        resolve(window.AMap)
+      }
     }
   })
 }

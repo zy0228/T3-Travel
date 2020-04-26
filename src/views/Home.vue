@@ -11,6 +11,7 @@
         :isNeedSetCenter="isNeedSetCenter"
         @draging="draging"
         @get-pois="getPois"
+        @getCPosiError="getCPosiError"
       >
       </app-map>
       <div class="search-wrapper">
@@ -46,6 +47,14 @@
         </div>
       </transition>
     </div>
+    <confirm
+      ref="confirm"
+      text="T3出行暂时无法获取您的位置，很抱歉，由于安全原因暂时在安卓机型上无法正确开启定位~"
+      confirmBtnText="输入上车点"
+      cancelBtnText="我知道了"
+      @confirm="inputStartPoi"
+    >
+    </Confirm>
     <SideBar ref="sidebar" @close="closeSide"></SideBar>
   </div>
 </template>
@@ -62,6 +71,7 @@ import Side from 'components/TheSide'
 import Reservation from 'components/MyReservation'
 import SideBar from 'components/TheSidebar'
 import client from 'common/js/compatibilityCss3'
+import Confirm from 'components/BaseConfirm'
 
 const TRANSFORM = client.transformProperty
 
@@ -128,6 +138,15 @@ export default {
         query: { start }
       })
     },
+    getCPosiError() {
+      this.errTimer = setTimeout(() => {
+        this.locationend = true
+        this.$refs.confirm.show()
+      }, 5000)
+    },
+    inputStartPoi() {
+      this.entery('start')
+    },
     getUser() {
       this.$refs.sidebar.show()
       this.$refs.wrapper.style['transition'] = 'transform .4s'
@@ -184,7 +203,8 @@ export default {
     SearchBox,
     Side,
     Reservation,
-    SideBar
+    SideBar,
+    Confirm
   }
 }
 </script>

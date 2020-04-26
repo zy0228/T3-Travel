@@ -155,9 +155,9 @@ export default {
 
           geolocation.getCurrentPosition((status, result) => {
             if (status == 'complete') {
-              // this.onComplete(result)
               this.onComplete(result, map)
             } else {
+              // 如果定位失败了, 大概率在安卓上
               this.onError(result)
             }
           })
@@ -166,7 +166,6 @@ export default {
     },
     // 解析定位结果
     onComplete (data, map) {
-      this.map = map
       let { city, citycode, adcode } = data.addressComponent
       let { lng, lat } = data.position
 
@@ -192,7 +191,36 @@ export default {
     },
     // 解析定位错误信息
     onError (data) {
-      console.log('err', data)
+      console.error('err', data)
+      this.$emit('getCPosiError')
+      AMap.plugin('AMap.CitySearch', () => {
+        let citySearch = new AMap.CitySearch()
+        citySearch.getLocalCity((status, result) => {
+          if (status === 'complete' && result.info === 'OK') {
+            // 查询成功，result即为当前所在城市信息
+            let {lng, lat} = this.map.getCenter()
+            let lnglat = [lng, lat]
+            let options = { city: result.city, type: mapConfig.type, showCover: false }
+
+            // 设置起点Marker
+            let startMarkerDom = document.createElement('div')
+            startMarkerDom.className = 'custom-startMarker-wrapper'
+
+            let startMarker = new AMap.Marker({
+              position: new AMap.LngLat(lng, lat),
+              content: startMarkerDom
+              // offset: new AMap.Pixel(-13, -30)
+            })
+
+            
+            this.map.add(startMarker)
+            this.setCity(result.city)
+            this.fuzzySearch(options, KEYWORD, lnglat, RAOUND_RADIUS)
+            this.positionPicker = positionPicker(this.map, this.onPickerSuccess, this.onPickerErr)
+            addDragEvent(this.map, this.dragStartHandler, this.dragingHandler, this.dragEndHandler)
+          }
+        })
+      })
     },
     setMapCenter (lnglat) {
       this.map && this.map.setCenter(lnglat)
@@ -405,6 +433,7 @@ export default {
   },
   beforeDestroy() {
     clearInterval(this.timer)
+    this.map && this.map.destroy()
   },
   watch: {
     time(newTime) {
