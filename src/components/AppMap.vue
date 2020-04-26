@@ -12,7 +12,7 @@ import { mapGetters, mapMutations, mapActions } from 'vuex'
 import mapConfig from 'common/js/config'
 import {
   dirving,
-  mapLoader,
+  loadMap,
   positionPicker,
   searchNearBy,
   addDragEvent,
@@ -109,9 +109,7 @@ export default {
       this.$refs.map.style.bottom = pix ? pix : '285px'
     },
     mpInital () {
-      mapLoader().then(AMap => {
-        if (AMap === null) return
-
+      loadMap().then(res => {
         this.map && this.map.destory()
 
         // initmap====================================================================
@@ -162,7 +160,7 @@ export default {
             }
           })
         })
-      })
+      }).catch((e) => {console.error(e)})
     },
     // 解析定位结果
     onComplete (data, map) {
@@ -291,7 +289,6 @@ export default {
     // 设为拖拽模式初始化成功
     onPickerSuccess (positionResult) {
       if (positionResult.info === RESULT_OK) {
-        console.log('拖拽成功')
         const { city } = positionResult.regeocode.addressComponent
         const { lng, lat } = positionResult.position
         const options = { city, type: mapConfig.type, showCover: false }

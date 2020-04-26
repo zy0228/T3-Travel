@@ -3,35 +3,50 @@ import mapConfig from './config'
 const STATUS_COMPLETE = 'complete'
 const STATUS_ERROR = 'error'
 
-export function mapLoader () {
+// 处理异步加载JS API
+export async function loadMap() {
+  let AMapJs = await _loadAMapJS()
+  let AMapUIJs = await _loadAMapUIJS()
+
+  let complete = await Promise.all([AMapJs, AMapUIJs])
+
+  initAMapUI()
+
+  return complete
+}
+
+function _loadAMapJS () {
   return new Promise((resolve, reject) => {
-    if (window.AMap && window.AMapUI) {
+    if (window.AMap) {
       resolve(window.AMap)
     } else {
       // 分别创建两个scripthtml元素 用来动态插入JS API
-      let scriptTag = document.createElement('script')
+      let scriptTag         = document.createElement('script')
+          scriptTag.type    = 'text/javascript'
+          scriptTag.src     = `${mapConfig.prefix}${mapConfig.key}`
+          scriptTag.onerror = reject
 
-      scriptTag.type = 'text/javascript'
-      scriptTag.async = true
-      scriptTag.src = `${mapConfig.prefix}${mapConfig.key}`
-      scriptTag.onerror = reject
       document.body.appendChild(scriptTag)
 
-      let scriptUi = document.createElement('script')
-      scriptUi.type = 'text/javascript'
-      scriptUi.src = `${mapConfig.uiUrl}`
-      document.body.appendChild(scriptUi)
+      window._initMap = resolve
     }
-    window.initMap = () => {
-      // 这里调用initAMapUI初始化
-      try {
-        initAMapUI()
-        resolve(window.AMap)
-      } catch(e) {
-        console.warn(e)
-        resolve(window.AMap)
-      }
+  })
+}
+
+function _loadAMapUIJS () {
+  return new Promise((resolve, reject) => {
+    if (window.initAMapUI) {
+      resolve()
+      return
     }
+    
+    let scriptUI         = document.createElement('script')
+        scriptUI.type    = 'text/javascript'
+        scriptUI.src     = `${mapConfig.uiUrl}`
+        scriptUI.onerror = reject
+        scriptUI.onload  = resolve
+
+    document.body.appendChild(scriptUI)
   })
 }
 
@@ -105,7 +120,7 @@ export function addDragEvent (map, dragStart, draging, dragEnd = () => {}) {
 }
 
 /**
- * 创建文本标记
+ * 创建文本标记  优点可以支持多种自定义dom
  * @param {*} target
  * @param {class AMap} map
  * @param {object} config
@@ -140,6 +155,7 @@ export function creatPointMarker (isShowCircle, position, offset) {
   })
 }
 
+// 搜索服务
 export function searchPlace ({ keyword, city, pageSize, pageIndex }) {
   return new Promise((resolve, reject) => {
     AMap.service('AMap.PlaceSearch', () => {
@@ -163,6 +179,7 @@ export function searchPlace ({ keyword, city, pageSize, pageIndex }) {
   })
 }
 
+// 路线规划
 export function dirving (map, origin, destination, opt, name) {
   let poiWay = {}
   let thePrice = ''
