@@ -49,7 +49,7 @@
     </div>
     <confirm
       ref="confirm"
-      text="T3出行暂时无法获取您的位置，很抱歉，由于安全原因暂时在安卓机型上无法正确开启定位~"
+      text="T3出行在您的设备上暂时无法获取您的位置，建议您手动输入定位~"
       confirmBtnText="输入上车点"
       cancelBtnText="我知道了"
       @confirm="inputStartPoi"

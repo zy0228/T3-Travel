@@ -216,8 +216,10 @@ export default {
             this.map.add(startMarker)
             this.setCity(result.city)
             this.fuzzySearch(options, KEYWORD, lnglat, RAOUND_RADIUS)
-            this.positionPicker = positionPicker(this.map, this.onPickerSuccess, this.onPickerErr)
-            addDragEvent(this.map, this.dragStartHandler, this.dragingHandler, this.dragEndHandler)
+            this.$$nextTick(() => {
+              this.positionPicker = positionPicker(this.map, this.onPickerSuccess, this.onPickerErr)
+              addDragEvent(this.map, this.dragStartHandler, this.dragingHandler, this.dragEndHandler)
+            })
           }
         })
       })
@@ -289,6 +291,7 @@ export default {
     // 设为拖拽模式初始化成功
     onPickerSuccess (positionResult) {
       if (positionResult.info === RESULT_OK) {
+        console.log('拖拽成功')
         const { city } = positionResult.regeocode.addressComponent
         const { lng, lat } = positionResult.position
         const options = { city, type: mapConfig.type, showCover: false }
