@@ -216,7 +216,7 @@ export default {
             this.map.add(startMarker)
             this.setCity(result.city)
             this.fuzzySearch(options, KEYWORD, lnglat, RAOUND_RADIUS)
-            this.$$nextTick(() => {
+            this.$nextTick(() => {
               this.positionPicker = positionPicker(this.map, this.onPickerSuccess, this.onPickerErr)
               addDragEvent(this.map, this.dragStartHandler, this.dragingHandler, this.dragEndHandler)
             })
