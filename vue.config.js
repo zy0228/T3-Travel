@@ -7,6 +7,7 @@ function resolve (dir) {
 module.exports = {
   publicPath: process.env.NODE_ENV === 'production' ? '/t3/' : '/',
   lintOnSave: false,
+  productionSourceMap: process.env.NODE_ENV === 'production' ? false : true,
   devServer: {
     disableHostCheck: true
   },
