@@ -5,7 +5,7 @@ const STATUS_ERROR = 'error'
 
 export function mapLoader () {
   return new Promise((resolve, reject) => {
-    if (window.AMap) {
+    if (window.AMap && window.AMapUI) {
       resolve(window.AMap)
     } else {
       // 分别创建两个scripthtml元素 用来动态插入JS API
