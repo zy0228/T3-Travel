@@ -43,8 +43,6 @@ const EVENT_SELECT = 'select'
 const EVENT_CANCEL = 'cancel'
 const EVENT_CHANGE = 'change'
 
-console.log(dataFormat())
-
 BScroll.use(Wheel)
 
 export default {

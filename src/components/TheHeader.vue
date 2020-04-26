@@ -1,6 +1,6 @@
 <template>
   <div class="header">
-    <div class="my-icon">
+    <div class="my-icon" @click="getUser">
       <span class="icon-user"></span>
     </div>
     <div class="citySelect">
@@ -20,6 +20,11 @@ import { mapGetters } from 'vuex'
 export default {
   computed: {
     ...mapGetters(['city'])
+  },
+  methods: {
+    getUser() {
+      this.$emit('getUser')
+    }
   }
 }
 </script>
