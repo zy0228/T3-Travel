@@ -2,10 +2,9 @@
   <div class="active" @touch.stop v-if="show">
     <div class="slide-banner-scroll" ref="slide">
       <div class="slide-banner-wrapper">
-        <div class="slide-item page1"></div>
+        <!-- <div class="slide-item page1"></div>
         <div class="slide-item page2"></div>
-        <div class="slide-item page3">
-        </div>
+        <div class="slide-item page3"></div> -->
       </div>
     </div>
     <div class="docs-wrapper">

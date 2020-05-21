@@ -38,7 +38,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { mapLoader, searchPlace } from 'common/js/map'
+import { loadMap, searchPlace } from 'common/js/map'
 import Poi from 'common/js/poi'
 import Scroll from 'components/BaseScroll'
 import Loading from 'components/BaseLoading'

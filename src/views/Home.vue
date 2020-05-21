@@ -56,6 +56,7 @@
     >
     </Confirm>
     <SideBar ref="sidebar" @close="closeSide"></SideBar>
+    <Layer v-if="showLayer"></Layer>
   </div>
 </template>
 
@@ -72,6 +73,7 @@ import Reservation from 'components/MyReservation'
 import SideBar from 'components/TheSidebar'
 import client from 'common/js/compatibilityCss3'
 import Confirm from 'components/BaseConfirm'
+import Layer from 'components/TheLayer'
 
 const TRANSFORM = client.transformProperty
 
@@ -86,7 +88,8 @@ export default {
       location: '',
       locationend: false,
       isCancelRv: false,
-      isNeedSetCenter: true
+      isNeedSetCenter: true,
+      showLayer: true
     }
   },
   computed: {
@@ -108,6 +111,7 @@ export default {
   },
   methods: {
     getPois(pois) {
+      this.showLayer = false
       this.setLocation(SING_LOCATION.START, pois.name)
       this.saveStart(new Pois(pois))
       this.location = pois.name
@@ -204,7 +208,8 @@ export default {
     Side,
     Reservation,
     SideBar,
-    Confirm
+    Confirm,
+    Layer
   }
 }
 </script>
