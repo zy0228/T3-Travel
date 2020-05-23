@@ -124,15 +124,15 @@ export default {
         width 100%
         border-radius 8px
         overflow hidden
-        &.page1
-          background url('~common/images/active3.png') no-repeat center
-          background-size contain
-        &.page2
-          background url('~common/images/active2.png') no-repeat center
-          background-size contain
-        &.page3
-          background url('~common/images/active1.png') no-repeat center
-          background-size contain
+        // &.page1
+        //   background url('~common/images/active3.png') no-repeat center
+        //   background-size contain
+        // &.page2
+        //   background url('~common/images/active2.png') no-repeat center
+        //   background-size contain
+        // &.page3
+        //   background url('~common/images/active1.png') no-repeat center
+        //   background-size contain
   .docs-wrapper
     position fixed
     top 70%

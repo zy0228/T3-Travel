@@ -13,7 +13,8 @@ const state = {
   poinWayList: [],
   addPoinWay: false,
   callCar: currentProcess.notCall,
-  resvernation: null
+  resvernation: null,
+  showLayer: true
 }
 
 export default state

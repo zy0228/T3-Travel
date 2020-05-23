@@ -3,7 +3,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 // import fastclick from 'fastclick'
-import VConsole from 'vconsole'
+// import VConsole from 'vconsole'
 
 import 'common/stylus/index.styl'
 

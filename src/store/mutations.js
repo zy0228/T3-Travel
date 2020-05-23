@@ -36,6 +36,9 @@ const mutations = {
   },
   [types.SET_RESVERNATION] (state, resvernation) {
     state.resvernation = resvernation
+  },
+  [types.SET_SHOW_LAYER] (state, layer) {
+    state.showLayer = layer
   }
 }
 
