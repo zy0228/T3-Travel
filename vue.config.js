@@ -5,7 +5,7 @@ function resolve (dir) {
 }
 
 module.exports = {
-  publicPath: process.env.NODE_ENV === 'production' ? '/t3/' : '/',
+  publicPath: '/',
   lintOnSave: false,
   productionSourceMap: process.env.NODE_ENV === 'production' ? false : true,
   devServer: {
